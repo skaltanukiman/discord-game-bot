@@ -1,17 +1,20 @@
-import { Client, ChannelType } from "discord.js";
+import { Client, ChannelType, TextChannel } from "discord.js";
 import { env } from "../config/env.js";
 
-export async function onReady(client: Client) {
+export async function onReady(client: Client): Promise<TextChannel | null> {
     console.log(`Logged in as ${client.user?.tag}`);
 
     const channel = await client.channels.fetch(env.channelId);
 
     if (!channel) {
         console.log("チャンネルが見つかりません");
-        return;
+        return null;
     }
 
-    if (channel.type === ChannelType.GuildText) {
-        await channel.send("おすすめゲームBOT 起動！");
+    if (channel.type !== ChannelType.GuildText) {
+        console.log("テキストチャンネルではありません");
+        return null;
     }
+
+    return channel;
 }
