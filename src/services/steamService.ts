@@ -7,6 +7,8 @@ export async function getMostPlayedGames(offset: number = 0, limit: number = 0) 
     limit = Math.max(0, limit);
 
     try {
+        // 再取得時キャッシュ使用を検討
+
         const response = await axios.get(
             "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/",
             {
