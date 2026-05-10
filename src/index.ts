@@ -2,7 +2,8 @@ import "dotenv/config";
 import { env } from "./config/env.js";
 import { onReady } from "./events/ready.js";
 import { runGameRecommendationJob } from "./jobs/steamJob.js";
-import { cronCycle } from "./config/setting.js";
+import { cronCycle, testSettings } from "./config/setting.js";
+import { fetchGameDetail } from "./services/steamService.js";
 import { Client, GatewayIntentBits } from "discord.js";
 import cron from "node-cron";
 
@@ -13,6 +14,13 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 // botログイン完了時発火
 client.once("clientReady", async () => {
+
+    // テスト用
+    if (testSettings.testmode) {
+        await fetchGameDetail(570);
+        console.log("テストモードのため処理を終了します");
+        process.exit(0);
+    }
 
     // チャンネルを取得
     const channel = await onReady(client);
@@ -32,7 +40,7 @@ client.once("clientReady", async () => {
             await runGameRecommendationJob(client, channel);
         }
         catch (error) {
-            console.error("cron実行エラー", error);
+            console.error("cron実行中エラー", error);
             process.exit(1);
         }
     });

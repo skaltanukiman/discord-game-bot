@@ -4,6 +4,44 @@ import { mostPlayedCache, initializeMostPlayedCache } from "../state/cacheManage
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime } from "../config/setting.js";
+import { SteamAppDetailsResponse, MostPlayedGame } from "../services/steamTypeManager.js";
+
+export async function getDetailGameDatas(appids: number[]) {
+    const result: SteamAppDetailsResponse = {};
+
+    for (const appid of appids) {
+        const appidStr = String(appid);
+
+        // appidがキャッシュに存在すればキャッシュから
+
+        // 存在しなければAPIから取得
+        const detail = await fetchGameDetail(appid);
+        result[appidStr] = detail[appidStr]!;
+    }
+
+    console.log("リザルト");
+    console.log(result);
+}
+
+export async function fetchGameDetail(appid: number) {
+    try {
+        const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}`);
+
+        if (!response.ok) {
+            throw new Error("Steam APIのリクエストに失敗しました。");
+        }
+
+        const data: SteamAppDetailsResponse = await response.json();
+
+        // console.log(data);
+
+        return data;
+    }
+    catch (error) {
+        console.error("Steam API処理エラー", error);
+        throw error;
+    }
+}
 
 /**
  * 同時接続数ランキングを取得し、指定条件で抽出した結果を返却する
@@ -13,7 +51,7 @@ import { cacheTime } from "../config/setting.js";
  * @param limit 取得件数（0の場合は取得開始位置より後ろを全件取得）
  * @returns 同時接続数ランキングデータ。取得失敗時は空配列
  */
-export async function getMostPlayedGames(offset: number = 0, limit: number = 0) {
+export async function getMostPlayedGames(offset: number = 0, limit: number = 0): Promise<MostPlayedGame[]> {
     // パラメタが負数の場合0とみなす
     offset = Math.max(0, offset);
     limit = Math.max(0, limit);
@@ -73,7 +111,7 @@ export async function getMostPlayedGames(offset: number = 0, limit: number = 0) 
  * 
  * @returns 同時接続数ランキングデータ
  */
-async function fetchMostPlayedGames(): Promise<any[]> {
+async function fetchMostPlayedGames(): Promise<MostPlayedGame[]> {
 
     const response = await axios.get(
         "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/",
