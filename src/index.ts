@@ -17,7 +17,8 @@ client.once("clientReady", async () => {
     const channel = await onReady(client);
 
     if (!channel) {
-        return;
+        console.log("チャンネル取得失敗のため終了します");
+        process.exit(0);
     }
 
     await runGameRecommendationJob(client, channel);

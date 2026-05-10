@@ -5,6 +5,14 @@ import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime } from "../config/setting.js";
 
+/**
+ * 同時接続数ランキングを取得し、指定条件で抽出した結果を返却する
+ * offset と limit が指定されている場合は、該当範囲のデータのみ返却する
+ * 
+ * @param offset 取得開始位置
+ * @param limit 取得件数（0の場合は取得開始位置より後ろを全件取得）
+ * @returns 同時接続数ランキングデータ。取得失敗時は空配列
+ */
 export async function getMostPlayedGames(offset: number = 0, limit: number = 0) {
     // パラメタが負数の場合0とみなす
     offset = Math.max(0, offset);
@@ -43,7 +51,9 @@ export async function getMostPlayedGames(offset: number = 0, limit: number = 0) 
 
         if (offset !== 0 || limit !== 0) {
             // 引数で渡されたパラメタにより結果を抽出する
-            ranks = ranks.slice(offset, offset + limit);
+            ranks = limit === 0
+                ? ranks.slice(offset)
+                : ranks.slice(offset, offset + limit);
         }
 
         setNewCacheVal(offset, limit, key, fetchTime, ranks);
