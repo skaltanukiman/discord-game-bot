@@ -2,6 +2,7 @@ import "dotenv/config";
 import { env } from "./config/env.js";
 import { onReady } from "./events/ready.js";
 import { runGameRecommendationJob } from "./jobs/steamJob.js";
+import { cronCycle } from "./config/setting.js";
 import { Client, GatewayIntentBits } from "discord.js";
 import cron from "node-cron";
 
@@ -24,7 +25,7 @@ client.once("clientReady", async () => {
     await runGameRecommendationJob(client, channel);
 
     // 定期実行
-    cron.schedule("*/20 * * * * *", async () => {
+    cron.schedule(cronCycle.index, async () => {
 
         try {
             console.log("定期実行開始");
