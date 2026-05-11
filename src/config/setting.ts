@@ -1,9 +1,11 @@
 type cacheTimeType = {
-    mostPlayed: number
+    mostPlayed: number,
+    detailData: number
 }
 
 export const cacheTime: cacheTimeType = {
-    mostPlayed: 1
+    mostPlayed: 1,    // 分
+    detailData: 1440  // 分（1440:一日）
 }
 
 type cronCycleType = {
@@ -12,7 +14,7 @@ type cronCycleType = {
 
 export const cronCycle: cronCycleType = {
     // (秒) 分 時 日 月 曜日
-    index: "*/180 * * * * *"
+    index: "*/20 * * * * *"
 }
 
 type testSettingsType = {

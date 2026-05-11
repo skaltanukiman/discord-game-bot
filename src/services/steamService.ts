@@ -1,29 +1,91 @@
 import axios from "axios";
 import { env } from "../config/env.js";
-import { mostPlayedCache, initializeMostPlayedCache } from "../state/cacheManager.js";
+import { mostPlayedCache, initializeMostPlayedCache, detailDataCache } from "../state/cacheManager.js";
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime } from "../config/setting.js";
 import { SteamAppDetailsResponse, MostPlayedGame } from "../services/steamTypeManager.js";
 
+/**
+ * 渡されたappidの詳細データを取得し返却する
+ * 
+ * @param appids 取得対象の詳細データID配列
+ * @returns 詳細データ
+ */
 export async function getDetailGameDatas(appids: number[]) {
     const result: SteamAppDetailsResponse = {};
 
     for (const appid of appids) {
         const appidStr = String(appid);
 
-        // appidがキャッシュに存在すればキャッシュから
+        if (isDetailCacheValid(appid)) {
+            // appidがキャッシュに存在すればキャッシュから
+            console.log("キャッシュからDetailデータを取得");
+            result[appidStr] = getDetailCache(appidStr)!;
+        }
+        else {
+            // 存在しなければAPIから取得
+            console.log("APIからDetailデータを取得");
+            const detail = await fetchGameDetail(appid);
+            result[appidStr] = detail[appidStr]!;
 
-        // 存在しなければAPIから取得
-        const detail = await fetchGameDetail(appid);
-        result[appidStr] = detail[appidStr]!;
+            setDetailCache(appid, appidStr, detail);
+            // console.log(`time: ${detailDataCache.appidWithFetchTime.get(appid)}`)
+        }
     }
 
-    console.log("リザルト");
-    console.log(result);
+    // console.log("リザルト");
+    // console.log(result);
+    // console.log(detailDataCache.data);
+
+    return result;
 }
 
-export async function fetchGameDetail(appid: number) {
+/**
+ * 詳細データをキャッシュから取得するかの検証を行う
+ * 
+ * @param appid 検証対象の詳細データID
+ * @returns キャッシュから取得する場合True、APIから取得する場合false
+ */
+function isDetailCacheValid(appid: number) {
+    if (!detailDataCache) return false;
+    
+    if (!detailDataCache.appidWithFetchTime.has(appid)) return false;
+
+    const preFetchTime = detailDataCache.appidWithFetchTime.get(appid);
+
+    if (!preFetchTime) return false;
+
+    // 時刻差異が指定された分数以内の場合、キャッシュから取得
+    return isWithinMinutes(preFetchTime, cacheTime.mostPlayed);
+}
+
+/**
+ * 引数で渡されたIDのキャッシュデータを返却する
+ * 
+ * @param appidStr 取得するキャッシュデータのID（文字列）
+ */
+function getDetailCache(appidStr: string) {
+    return detailDataCache.data[appidStr];
+}
+
+/**
+ * キャッシュ関連のデータをセットする。
+ * 
+ * @param キャッシュするデータ群
+ */
+function setDetailCache(appid: number, appidStr: string, data: SteamAppDetailsResponse) {
+    detailDataCache.appidWithFetchTime.set(appid, Date.now());
+    detailDataCache.data[appidStr] = data[appidStr]!;
+}
+
+/**
+ * appidで指定したIDの詳細データを取得し、返却する
+ * 
+ * @param appid 詳細データのID
+ * @returns IDで指定された詳細データ
+ */
+async function fetchGameDetail(appid: number) {
     try {
         const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}`);
 

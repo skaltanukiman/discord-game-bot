@@ -1,3 +1,5 @@
+import { SteamAppDetailsResponse } from "../services/steamTypeManager.js";
+
 type mostPlayedCacheType = {
     preOffset: number | null,
     preLimit: number | null,
@@ -5,6 +7,16 @@ type mostPlayedCacheType = {
     key: string | null,  // offset & limit
     data: any
 }
+
+type DetailDataCacheType = {
+    appidWithFetchTime: Map<number, number>,
+    data: SteamAppDetailsResponse
+}
+
+export const detailDataCache: DetailDataCacheType = {
+    appidWithFetchTime: new Map<number, number>(),
+    data: {}
+};
 
 export const mostPlayedCache: mostPlayedCacheType = {
     preOffset: null,

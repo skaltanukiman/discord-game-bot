@@ -13,5 +13,5 @@ export async function runGameRecommendationJob(client: Client, channel: TextChan
 
     const appids: number[] = ranks.map(x => x.appid);
 
-    await getDetailGameDatas(appids);
+    const detailData = await getDetailGameDatas(appids);
 }
