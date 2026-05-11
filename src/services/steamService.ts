@@ -4,7 +4,35 @@ import { mostPlayedCache, initializeMostPlayedCache, detailDataCache } from "../
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime } from "../config/setting.js";
-import { SteamAppDetailsResponse, MostPlayedGame } from "../services/steamTypeManager.js";
+import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
+
+/**
+ * steamAPIから取得した同時接続数データと詳細データを一つのオブジェクトにマージする
+ * 
+ * @param appids          データID配列
+ * @param mostPlayedDatas 同時接続数データ
+ * @param detailData      詳細データ
+ * @returns IDをキーとして同時接続数と詳細データをオブジェクトとして持つMap型オブジェクト
+ */
+export function steamDataMarge(appids: number[], mostPlayedDatas: MostPlayedGame[], detailData:SteamAppDetailsResponse): Map<number, ExtendedSteamGameDetail> {
+    const extendedSteamGame = new Map<number, ExtendedSteamGameDetail>();
+
+    for (const appid of appids) {
+        const appidStr = String(appid);
+        if (!detailData[appidStr]?.success) continue;  // 詳細データのsuccessがfalseの場合、次のループへ
+
+        const mostPlayedData = mostPlayedDatas.find(x => x.appid === appid);
+
+        if (!mostPlayedData) continue;
+
+        const extended: ExtendedSteamGameDetail = {steamDetail: detailData[appidStr]["data"]
+                                                 , mostplayed: mostPlayedData};
+
+        extendedSteamGame.set(appid, extended);        
+    }
+
+    return extendedSteamGame;
+}
 
 /**
  * 渡されたappidの詳細データを取得し返却する
@@ -12,7 +40,7 @@ import { SteamAppDetailsResponse, MostPlayedGame } from "../services/steamTypeMa
  * @param appids 取得対象の詳細データID配列
  * @returns 詳細データ
  */
-export async function getDetailGameDatas(appids: number[]) {
+export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDetailsResponse> {
     const result: SteamAppDetailsResponse = {};
 
     for (const appid of appids) {
@@ -47,7 +75,7 @@ export async function getDetailGameDatas(appids: number[]) {
  * @param appid 検証対象の詳細データID
  * @returns キャッシュから取得する場合True、APIから取得する場合false
  */
-function isDetailCacheValid(appid: number) {
+function isDetailCacheValid(appid: number): boolean {
     if (!detailDataCache) return false;
     
     if (!detailDataCache.appidWithFetchTime.has(appid)) return false;
@@ -85,7 +113,7 @@ function setDetailCache(appid: number, appidStr: string, data: SteamAppDetailsRe
  * @param appid 詳細データのID
  * @returns IDで指定された詳細データ
  */
-async function fetchGameDetail(appid: number) {
+async function fetchGameDetail(appid: number): Promise<SteamAppDetailsResponse> {
     try {
         const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}`);
 

@@ -35,9 +35,7 @@ export type MostPlayedGame = {
     peak_in_game: number;
 };
 
-type ExtendedSteamGameDetail = {
+export type ExtendedSteamGameDetail = {
     steamDetail: SteamAppDetailsResponse[string]["data"];
     mostplayed: MostPlayedGame;
 }
-
-export const extendedSteamGame = new Map<number, ExtendedSteamGameDetail>();
