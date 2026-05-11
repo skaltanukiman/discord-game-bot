@@ -14,7 +14,7 @@ type cronCycleType = {
 
 export const cronCycle: cronCycleType = {
     // (秒) 分 時 日 月 曜日
-    index: "*/20 * * * * *"
+    index: "*/30 * * * * *"
 }
 
 type testSettingsType = {

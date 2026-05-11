@@ -19,7 +19,10 @@ export function steamDataMarge(appids: number[], mostPlayedDatas: MostPlayedGame
 
     for (const appid of appids) {
         const appidStr = String(appid);
-        if (!detailData[appidStr]?.success) continue;  // 詳細データのsuccessがfalseの場合、次のループへ
+        if (!detailData[appidStr]?.success) {
+            console.log("successの中にfalseが検知されました。");
+            continue;  // 詳細データのsuccessがfalseの場合、次のループへ
+        }
 
         const mostPlayedData = mostPlayedDatas.find(x => x.appid === appid);
 
@@ -48,12 +51,12 @@ export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDeta
 
         if (isDetailCacheValid(appid)) {
             // appidがキャッシュに存在すればキャッシュから
-            console.log("キャッシュからDetailデータを取得");
+            // console.log("キャッシュからDetailデータを取得");
             result[appidStr] = getDetailCache(appidStr)!;
         }
         else {
             // 存在しなければAPIから取得
-            console.log("APIからDetailデータを取得");
+            // console.log("APIからDetailデータを取得");
             const detail = await fetchGameDetail(appid);
             result[appidStr] = detail[appidStr]!;
 
@@ -148,11 +151,11 @@ export async function getMostPlayedGames(offset: number = 0, limit: number = 0):
 
     const key = createKey(offset, limit);
 
-    console.log(`キャッシュ: ${mostPlayedCache.preOffset}`);
-    console.log(`キャッシュ: ${mostPlayedCache.preLimit}`);
-    console.log(`キャッシュ: ${mostPlayedCache.preFetchTime}`);
-    console.log(`キャッシュ: ${mostPlayedCache.key}`);
-    console.log(`キャッシュ: ${mostPlayedCache.data}`);
+    // console.log(`キャッシュ: ${mostPlayedCache.preOffset}`);
+    // console.log(`キャッシュ: ${mostPlayedCache.preLimit}`);
+    // console.log(`キャッシュ: ${mostPlayedCache.preFetchTime}`);
+    // console.log(`キャッシュ: ${mostPlayedCache.key}`);
+    // console.log(`キャッシュ: ${mostPlayedCache.data}`);
 
     try {
         if (isCacheValid(key)) {
