@@ -22,5 +22,5 @@ type testSettingsType = {
 }
 
 export const testSettings: testSettingsType = {
-    testmode: false
+    testmode: true
 }

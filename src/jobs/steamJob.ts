@@ -1,10 +1,11 @@
-import { Client, TextChannel } from "discord.js";
+import { ActionRowBuilder, APIEmbed, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, TextChannel } from "discord.js";
 import { getMostPlayedGames, getDetailGameDatas, steamDataMarge } from "../services/steamService.js";
 import { categoryGroups } from "../structure/categorise.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 import { filterMultiplayerGames } from "../util/filtering.js";
 import { testSettings } from "../config/setting.js";
 import { createEmbed } from "../util/embedUtil.js";
+import { unknown } from "../services/embedService.js"
 
 export async function runGameRecommendationJob(client: Client, channel: TextChannel) {
     const ranks = await getMostPlayedGames(0, 5);
@@ -34,6 +35,8 @@ export async function runGameRecommendationJob(client: Client, channel: TextChan
         return;
     }
 
+    // ここより上をラッパーし抽象化するべきか？
+
     // console.log("Mapデータ");
     // console.log(steamDataMap);
 
@@ -46,8 +49,13 @@ export async function runGameRecommendationJob(client: Client, channel: TextChan
     }
 
     if (testSettings.testmode) {
-        const embed = createEmbed(filteredMap.get(730)!);
-        await channel.send({ embeds: [embed] });
+        const gameDetails: ExtendedSteamGameDetail[] = [];
+        gameDetails.push(filteredMap.get(730)!);
+        gameDetails.push(filteredMap.get(578080)!);
+
+        // filterMapよりDISCORDに送りたいものだけをgameDetailsに配列として格納し、unknownを叩く
+
+        await unknown(gameDetails, channel);
     }
 
 
