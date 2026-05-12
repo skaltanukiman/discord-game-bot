@@ -3,7 +3,7 @@ import { env } from "./config/env.js";
 import { onReady } from "./events/ready.js";
 import { runGameRecommendationJob } from "./jobs/steamJob.js";
 import { cronCycle, testSettings } from "./config/setting.js";
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, EmbedBuilder  } from "discord.js";
 import cron from "node-cron";
 
 /** 初期処理 **/
@@ -14,13 +14,6 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // botログイン完了時発火
 client.once("clientReady", async () => {
 
-    // テスト用
-    if (testSettings.testmode) {
-        // await fetchGameDetail(570);
-        console.log("テストモードのため処理を終了します");
-        process.exit(0);
-    }
-
     // チャンネルを取得
     const channel = await onReady(client);
 
@@ -28,6 +21,16 @@ client.once("clientReady", async () => {
         console.log("チャンネル取得失敗のため終了します");
         process.exit(0);
     }
+
+    // テスト用
+    // if (testSettings.testmode) {
+    //     const embeds: EmbedBuilder[] = [];
+
+    //     await channel.send({ embeds: embeds });
+
+    //     console.log("テストモードのため処理を終了します");
+    //     process.exit(0);
+    // }
 
     await runGameRecommendationJob(client, channel);
 

@@ -65,10 +65,6 @@ export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDeta
         }
     }
 
-    // console.log("リザルト");
-    // console.log(result);
-    // console.log(detailDataCache.data);
-
     return result;
 }
 
