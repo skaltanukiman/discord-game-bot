@@ -32,7 +32,7 @@ export async function runGameRecommendationJob(client: Client, channel: TextChan
         gameDetails.push(filteredMap.get(730)!);
         gameDetails.push(filteredMap.get(578080)!);
 
-        // filterMapよりDISCORDに送りたいものだけをgameDetailsに配列として格納し、unknownを叩く
+        // filterMapよりDISCORDに送りたいものだけをgameDetailsに配列として格納し、[sendGameDetailsToChannel]を叩く
 
         await sendGameDetailsToChannel(gameDetails, channel);
     }
