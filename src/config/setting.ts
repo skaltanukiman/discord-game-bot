@@ -24,3 +24,13 @@ type testSettingsType = {
 export const testSettings: testSettingsType = {
     testmode: false
 }
+
+type MostPlayedType = {
+    offset: number,
+    limit: number
+}
+
+export const mostPlayed: MostPlayedType = {
+    offset: 0,
+    limit: 5
+}

@@ -3,7 +3,7 @@ import { env } from "../config/env.js";
 import { mostPlayedCache, initializeMostPlayedCache, detailDataCache } from "../state/cacheManager.js";
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
-import { cacheTime } from "../config/setting.js";
+import { cacheTime, mostPlayed } from "../config/setting.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 
 /**
@@ -23,7 +23,7 @@ import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from
  * ランキングまたは詳細情報の取得に失敗した場合はnullを返却する
  */
 export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSteamGameDetail> | null> {
-    const ranks = await getMostPlayedGames(0, 5);
+    const ranks = await getMostPlayedGames(mostPlayed.offset, mostPlayed.limit);
     console.log(ranks);
 
     if (!ranks || ranks.length === 0) {
