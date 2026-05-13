@@ -1,6 +1,7 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, APIEmbedField, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 import { addFieldsIfExists } from "../helper/embedHelper.js";
+import { testSettings } from "../config/setting.js";
 
 export function createEmbed(data: ExtendedSteamGameDetail) {
     const title = data.steamDetail.name;
@@ -11,6 +12,13 @@ export function createEmbed(data: ExtendedSteamGameDetail) {
         .setDescription("今宵はハンバーグじゃ");
 
     headerImage && embed.setImage(headerImage);
+
+    if (testSettings.testmode) {
+        const array: APIEmbedField[] = [];
+        const a: APIEmbedField = {name: "a", value: "a"}
+        array.push(a);
+    }
+    
     addFieldsIfExists(embed);  // fieldを付与する（実装中）
 
     return embed;
