@@ -7,6 +7,46 @@ import { cacheTime } from "../config/setting.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 
 /**
+ * Steamの同時接続数ランキング上位ゲームの詳細情報を取得する
+ * 
+ * 処理内容:
+ * 1. 同時接続数ランキングを取得
+ * 2. ランキングからappid一覧を抽出
+ * 3. appidを元に詳細情報を取得
+ * 4. ランキング情報と詳細情報をマージして返却
+ * 
+ * @returns
+ * 上位ゲームの詳細情報Map。
+ * key: appid
+ * value: ExtendedSteamGameDetail
+ * 
+ * ランキングまたは詳細情報の取得に失敗した場合はnullを返却する
+ */
+export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSteamGameDetail> | null> {
+    const ranks = await getMostPlayedGames(0, 5);
+    console.log(ranks);
+
+    if (!ranks || ranks.length === 0) {
+        console.log("ランキングデータが取得できなかったため、nullを返却します。");
+        return null;
+    }
+
+    const appids: number[] = ranks.map(x => x.appid);
+
+    const detailData = await getDetailGameDatas(appids);
+
+    if (!detailData || Object.keys(detailData).length === 0) {
+        console.log("詳細データが取得できなかったため、nullを返却します。");
+        return null;
+    }
+
+    // console.log("詳細データ");
+    // console.log(detailData);
+
+    return steamDataMarge(appids, ranks, detailData);    
+}
+
+/**
  * steamAPIから取得した同時接続数データと詳細データを一つのオブジェクトにマージする
  * 
  * @param appids          データID配列

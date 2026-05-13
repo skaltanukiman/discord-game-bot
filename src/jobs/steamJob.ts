@@ -1,5 +1,5 @@
 import { ActionRowBuilder, APIEmbed, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, TextChannel } from "discord.js";
-import { getMostPlayedGames, getDetailGameDatas, steamDataMarge } from "../services/steamService.js";
+import { getMostPlayedGameDetails } from "../services/steamService.js";
 import { categoryGroups } from "../structure/categorise.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 import { filterMultiplayerGames } from "../util/filtering.js";
@@ -8,34 +8,13 @@ import { createEmbed } from "../util/embedUtil.js";
 import { unknown } from "../services/embedService.js"
 
 export async function runGameRecommendationJob(client: Client, channel: TextChannel) {
-    const ranks = await getMostPlayedGames(0, 5);
-    console.log(ranks);
 
-    if (!ranks || ranks.length === 0) {
-        console.log("ランキングデータが取得できなかったため、処理をスキップします。");
-        return;
-    }
+    const steamDataMap = await getMostPlayedGameDetails();
 
-    const appids: number[] = ranks.map(x => x.appid);
-
-    const detailData = await getDetailGameDatas(appids);
-
-    if (!detailData || Object.keys(detailData).length === 0) {
-        console.log("詳細データが取得できなかったため、処理をスキップします。");
-        return;
-    }
-
-    // console.log("詳細データ");
-    // console.log(detailData);
-
-    const steamDataMap = steamDataMarge(appids, ranks, detailData);
-
-    if (steamDataMap.size === 0) {
+    if (!steamDataMap || steamDataMap.size === 0) {
         console.log("steamデータが空のため、処理をスキップします。");
         return;
     }
-
-    // ここより上をラッパーし抽象化するべきか？
 
     // console.log("Mapデータ");
     // console.log(steamDataMap);
