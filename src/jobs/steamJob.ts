@@ -5,7 +5,7 @@ import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from
 import { filterMultiplayerGames } from "../util/filtering.js";
 import { testSettings } from "../config/setting.js";
 import { createEmbed } from "../util/embedUtil.js";
-import { unknown } from "../services/embedService.js"
+import { sendGameDetailsToChannel } from "../services/embedService.js"
 
 export async function runGameRecommendationJob(client: Client, channel: TextChannel) {
 
@@ -34,7 +34,7 @@ export async function runGameRecommendationJob(client: Client, channel: TextChan
 
         // filterMapよりDISCORDに送りたいものだけをgameDetailsに配列として格納し、unknownを叩く
 
-        await unknown(gameDetails, channel);
+        await sendGameDetailsToChannel(gameDetails, channel);
     }
 
 
