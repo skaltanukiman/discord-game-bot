@@ -32,5 +32,5 @@ type MostPlayedType = {
 
 export const mostPlayed: MostPlayedType = {
     offset: 0,
-    limit: 5
+    limit: 15
 }

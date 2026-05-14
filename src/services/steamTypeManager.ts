@@ -24,6 +24,14 @@ export type SteamAppDetailsResponse = {
                 coming_soon: boolean;
                 date: string;
             };
+            price_overview?: {
+                currency: string;
+                initial: number;
+                final: number;
+                discount_percent: number;
+                initial_formatted?: string;
+                final_formatted?: string;
+            };
         };
     };
 };

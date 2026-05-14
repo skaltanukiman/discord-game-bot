@@ -153,8 +153,11 @@ function setDetailCache(appid: number, appidStr: string, data: SteamAppDetailsRe
  * @returns IDで指定された詳細データ
  */
 async function fetchGameDetail(appid: number): Promise<SteamAppDetailsResponse> {
+    const BASE_URL = "https://store.steampowered.com/api/appdetails";
+    const LANGUAGE = "japanese"
+
     try {
-        const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}`);
+        const response = await fetch(`${BASE_URL}?appids=${appid}&l=${LANGUAGE}`);
 
         if (!response.ok) {
             throw new Error("Steam APIのリクエストに失敗しました。");
