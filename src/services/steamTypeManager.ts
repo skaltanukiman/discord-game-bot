@@ -43,6 +43,17 @@ export type MostPlayedGame = {
     peak_in_game: number;
 };
 
+export type CurrentPlayersResponse = {
+    response: {
+        result: number;
+        player_count?: number;
+    };
+};
+
+export type CurrentPlayersData = {
+    [appid: string]: number | null;
+};
+
 export type ExtendedSteamGameDetail = {
     steamDetail: SteamAppDetailsResponse[string]["data"];
     mostplayed: MostPlayedGame;

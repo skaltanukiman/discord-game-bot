@@ -4,7 +4,7 @@ import { mostPlayedCache, initializeMostPlayedCache, detailDataCache } from "../
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime, mostPlayed } from "../config/setting.js";
-import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
+import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, CurrentPlayersResponse, CurrentPlayersData } from "../services/steamTypeManager.js";
 
 /**
  * Steamの同時接続数ランキング上位ゲームの詳細情報を取得する
@@ -43,7 +43,38 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     // console.log("詳細データ");
     // console.log(detailData);
 
+    const aaa = await current(appids);  // テスト
+    console.log(aaa);
+
     return steamDataMarge(appids, ranks, detailData);    
+}
+
+async function current(appids: number[]): Promise<CurrentPlayersData> {
+    const result: CurrentPlayersData = {};
+
+    try {
+        for (const appid of appids) {
+            const appidStr = String(appid);
+
+            // このAPI部の処理だけ関数をわけて抽象化する
+            const response = await axios.get("https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/",
+                {
+                    params: {
+                        appid: appid
+                    }
+                }
+            );
+
+            const data: CurrentPlayersResponse = response.data;
+            if (data.response.player_count) result[appidStr] = data.response.player_count;
+        }
+
+        return result;
+    }
+    catch (error) {
+        console.error("接続数Steam API処理エラー", error);
+        return {};
+    }
 }
 
 /**
