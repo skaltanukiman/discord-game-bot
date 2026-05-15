@@ -34,6 +34,7 @@ export function createButton(data: ExtendedSteamGameDetail) {
 }
 
 function pushFieldElements(data: ExtendedSteamGameDetail): APIEmbedField[] {
+    const release_date = data.steamDetail.release_date;
 
     const fields: APIEmbedField[] = [];
 
@@ -47,6 +48,8 @@ function pushFieldElements(data: ExtendedSteamGameDetail): APIEmbedField[] {
     addPriceFields(fields, data, [priceInfoMapping.lang.JPY]);
 
     if (hasJapaneseLanguage(data) === false) fields.push({ name: "言語", value: "×日本語非対応" });
+
+    release_date && fields.push({ name: "リリース日", value: release_date.date });
 
     return fields;
 }
