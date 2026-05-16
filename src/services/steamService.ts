@@ -5,6 +5,7 @@ import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime, mostPlayed } from "../config/setting.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, CurrentPlayersResponse, CurrentPlayersData } from "../services/steamTypeManager.js";
+import { fetchInBatches } from "../batch/apiBatches.js";
 
 /**
  * Steamの同時接続数ランキング上位ゲームの詳細情報を取得する
@@ -49,7 +50,7 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     // console.log(detailData);
 
     // const currentPlayer: CurrentPlayersData = await fetchCurrentPlayerCounts(appids);
-    console.log(currentPlayer);
+    // console.log(currentPlayer);
 
     return steamDataMarge(appids, ranks, detailData, currentPlayer);    
 }
@@ -65,6 +66,7 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
  */
 async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayersData> {
     const result: CurrentPlayersData = {};
+    // 処理を並列化する
 
     for (const appid of appids) {
         const appidStr = String(appid);
@@ -88,6 +90,24 @@ async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayer
                 setCacheData(currentDataCache, appid, appidStr, result);
             }
         }
+    }
+
+    return result;
+}
+
+async function getCurrentPlayer(appid: number) {
+    const result: CurrentPlayersData = {};
+    const appidStr = String(appid);
+
+    const data: CurrentPlayersResponse = await fetchCurrentConnectionData(appid);
+    if (data.response.player_count != null) {
+        result[appidStr] = {
+            data: {
+                player_count: data.response.player_count
+            }
+        };
+
+        setCacheData(currentDataCache, appid, appidStr, result);
     }
 
     return result;
@@ -161,36 +181,68 @@ export function steamDataMarge(appids: number[], mostPlayedDatas: MostPlayedGame
     return extendedSteamGame;
 }
 
-/**
- * 渡されたappidの詳細データを取得し返却する
- * 
- * @param appids 取得対象の詳細データID配列
- * @returns 詳細データ
- */
 export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDetailsResponse> {
     const result: SteamAppDetailsResponse = {};
+
+    const needFetch: number[] = [];
 
     for (const appid of appids) {
         const appidStr = String(appid);
 
         if (hasValidCache(detailDataCache, appid, cacheTime.detailData)) {
             // appidがキャッシュに存在すればキャッシュから
-            // console.log("キャッシュからDetailデータを取得");
+            console.log("キャッシュからDetailデータを取得");
             result[appidStr] = getCacheData(detailDataCache, appidStr)!;
         }
         else {
-            // 存在しなければAPIから取得
-            // console.log("APIからDetailデータを取得");
-            const detail: SteamAppDetailsResponse = await fetchGameDetail(appid);
-            result[appidStr] = detail[appidStr]!;
-
-            setCacheData(detailDataCache, appid, appidStr, detail);
-            // console.log(`time: ${detailDataCache.appidWithFetchTime.get(appid)}`)
+            needFetch.push(appid);
         }
     }
 
+    const fetched: SteamAppDetailsResponse = await fetchInBatches(needFetch, 10, fetchGameDetail);
+
+    for (const appidStr of Object.keys(fetched)) {
+        const appid = Number(appidStr);
+
+        if (!Number.isNaN(appid)) setCacheData(detailDataCache, appid, appidStr, fetched);
+    }
+
+    Object.assign(result, fetched);
+
     return result;
 }
+
+
+/**
+ * 渡されたappidの詳細データを取得し返却する
+ * 
+ * @param appids 取得対象の詳細データID配列
+ * @returns 詳細データ
+ */
+// export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDetailsResponse> {
+//     const result: SteamAppDetailsResponse = {};
+
+//     for (const appid of appids) {
+//         const appidStr = String(appid);
+
+//         if (hasValidCache(detailDataCache, appid, cacheTime.detailData)) {
+//             // appidがキャッシュに存在すればキャッシュから
+//             // console.log("キャッシュからDetailデータを取得");
+//             result[appidStr] = getCacheData(detailDataCache, appidStr)!;
+//         }
+//         else {
+//             // 存在しなければAPIから取得
+//             // console.log("APIからDetailデータを取得");
+//             const detail: SteamAppDetailsResponse = await fetchGameDetail(appid);
+//             result[appidStr] = detail[appidStr]!;
+
+//             setCacheData(detailDataCache, appid, appidStr, detail);
+//             // console.log(`time: ${detailDataCache.appidWithFetchTime.get(appid)}`)
+//         }
+//     }
+
+//     return result;
+// }
 
 /**
  * appidで指定したIDの詳細データを取得し、返却する
@@ -198,7 +250,7 @@ export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDeta
  * @param appid 詳細データのID
  * @returns IDで指定された詳細データ
  */
-async function fetchGameDetail(appid: number): Promise<SteamAppDetailsResponse> {
+export async function fetchGameDetail(appid: number): Promise<SteamAppDetailsResponse> {
     const BASE_URL = "https://store.steampowered.com/api/appdetails";
     const LANGUAGE = "japanese"
 
