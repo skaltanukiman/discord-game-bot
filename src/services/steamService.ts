@@ -43,37 +43,66 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     // console.log("詳細データ");
     // console.log(detailData);
 
-    const aaa = await current(appids);  // テスト
+    const aaa = await fetchCurrentPlayerCounts(appids);  // テスト
     console.log(aaa);
 
     return steamDataMarge(appids, ranks, detailData);    
 }
 
-async function current(appids: number[]): Promise<CurrentPlayersData> {
+/**
+ * 指定した Steam アプリID一覧の現在プレイ人数を取得する
+ * 
+ * @param appids Steam アプリID配列
+ * @returns appid をキー、現在プレイ人数を値としたオブジェクト
+ * 
+ * @remarks
+ * プレイ人数の取得に失敗した appid は結果に含めない。
+ */
+async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayersData> {
     const result: CurrentPlayersData = {};
 
+    for (const appid of appids) {
+        const appidStr = String(appid);
+
+        const data: CurrentPlayersResponse = await fetchCurrentConnectionData(appid);
+        if (data.response.player_count != null) result[appidStr] = data.response.player_count;
+    }
+
+    return result;
+}
+
+/**
+ * Steam API から指定したゲームの現在プレイ人数情報を取得する
+ * 
+ * @param appid Steam アプリID
+ * @returns プレイ人数情報を含むレスポンスデータ
+ * 
+ * @remarks
+ * API取得に失敗した場合は、`result: 99` を設定した
+ * エラーレスポンス風オブジェクトを返す。
+ * この場合 `player_count` は存在しない。
+ */
+async function fetchCurrentConnectionData(appid: number) {
+    const STEAM_API_ERROR: number = 99;
+
     try {
-        for (const appid of appids) {
-            const appidStr = String(appid);
-
-            // このAPI部の処理だけ関数をわけて抽象化する
-            const response = await axios.get("https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/",
-                {
-                    params: {
-                        appid: appid
-                    }
+        // このAPI部の処理だけ関数をわけて抽象化する
+        const response = await axios.get("https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/",
+            {
+                params: {
+                    appid: appid
                 }
-            );
+            }
+        );
 
-            const data: CurrentPlayersResponse = response.data;
-            if (data.response.player_count) result[appidStr] = data.response.player_count;
-        }
-
-        return result;
+        return response.data;
     }
     catch (error) {
-        console.error("接続数Steam API処理エラー", error);
-        return {};
+        console.error("Steam API処理エラー", `appid: ${appid}`, error);
+
+        // player_countはundefind
+        const data: CurrentPlayersResponse = {response:{result: STEAM_API_ERROR}};
+        return data;
     }
 }
 

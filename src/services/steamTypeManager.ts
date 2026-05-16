@@ -51,7 +51,7 @@ export type CurrentPlayersResponse = {
 };
 
 export type CurrentPlayersData = {
-    [appid: string]: number | null;
+    [appid: string]: number;
 };
 
 export type ExtendedSteamGameDetail = {
