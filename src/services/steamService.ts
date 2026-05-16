@@ -43,8 +43,8 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     // console.log("詳細データ");
     // console.log(detailData);
 
-    // const currentPlayer: CurrentPlayersData = await fetchCurrentPlayerCounts(appids);  // テスト
-    // console.log(currentPlayer);
+    const currentPlayer: CurrentPlayersData = await fetchCurrentPlayerCounts(appids);  // テスト
+    console.log(currentPlayer);
 
     return steamDataMarge(appids, ranks, detailData);    
 }
@@ -64,13 +64,24 @@ async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayer
     for (const appid of appids) {
         const appidStr = String(appid);
 
-        const data: CurrentPlayersResponse = await fetchCurrentConnectionData(appid);
-        if (data.response.player_count != null) {
-            result[appidStr] = {
-                data: {
-                    player_count: data.response.player_count
-                }
-            };
+        if (hasValidCache(currentDataCache, appid, cacheTime.currentPlayer)) {
+            // appidがキャッシュに存在すればキャッシュから
+            // console.log("キャッシュからDetailデータを取得");
+            result[appidStr] = getCacheData(currentDataCache, appidStr)!;
+        }
+        else {
+            // 存在しなければAPIから取得
+            // console.log("APIからDetailデータを取得");
+            const data: CurrentPlayersResponse = await fetchCurrentConnectionData(appid);
+            if (data.response.player_count != null) {
+                result[appidStr] = {
+                    data: {
+                        player_count: data.response.player_count
+                    }
+                };
+
+                setCacheData(currentDataCache, appid, appidStr, result);
+            }
         }
     }
 
@@ -92,7 +103,6 @@ async function fetchCurrentConnectionData(appid: number): Promise<CurrentPlayers
     const STEAM_API_ERROR: number = 99;
 
     try {
-        // このAPI部の処理だけ関数をわけて抽象化する
         const response = await axios.get("https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/",
             {
                 params: {
@@ -155,7 +165,7 @@ export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDeta
     for (const appid of appids) {
         const appidStr = String(appid);
 
-        if (hasValidCache(detailDataCache, appid, cacheTime.mostPlayed)) {
+        if (hasValidCache(detailDataCache, appid, cacheTime.detailData)) {
             // appidがキャッシュに存在すればキャッシュから
             // console.log("キャッシュからDetailデータを取得");
             result[appidStr] = getCacheData(detailDataCache, appidStr)!;
@@ -226,11 +236,11 @@ export async function getMostPlayedGames(offset: number = 0, limit: number = 0):
 
     try {
         if (isCacheValid(key)) {
-            console.log("キャッシュからデータを取得します。");
+            // console.log("キャッシュからデータを取得します。");
             return mostPlayedCache.data;
         }
         else {
-            console.log("APIからデータを取得します。");
+            // console.log("APIからデータを取得します。");
         }
     }
     catch (error) {
