@@ -1,6 +1,6 @@
 import axios from "axios";
 import { env } from "../config/env.js";
-import { mostPlayedCache, initializeMostPlayedCache, detailDataCache } from "../state/cacheManager.js";
+import { mostPlayedCache, initializeMostPlayedCache, currentDataCache, isDetailCacheValid, getDetailCache, setDetailCache } from "../state/cacheManager.js";
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime, mostPlayed } from "../config/setting.js";
@@ -43,8 +43,8 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     // console.log("詳細データ");
     // console.log(detailData);
 
-    const aaa = await fetchCurrentPlayerCounts(appids);  // テスト
-    console.log(aaa);
+    const currentPlayer: CurrentPlayersData = await fetchCurrentPlayerCounts(appids);  // テスト
+    console.log(currentPlayer);
 
     return steamDataMarge(appids, ranks, detailData);    
 }
@@ -71,6 +71,13 @@ async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayer
     return result;
 }
 
+function isCurrentCacheValid(appid: number) {
+    if (!currentDataCache) return false;
+
+    if (!currentDataCache.appidWithFetchTime.has(appid)) return false;
+
+}
+
 /**
  * Steam API から指定したゲームの現在プレイ人数情報を取得する
  * 
@@ -82,7 +89,7 @@ async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayer
  * エラーレスポンス風オブジェクトを返す。
  * この場合 `player_count` は存在しない。
  */
-async function fetchCurrentConnectionData(appid: number) {
+async function fetchCurrentConnectionData(appid: number): Promise<CurrentPlayersResponse> {
     const STEAM_API_ERROR: number = 99;
 
     try {
@@ -166,44 +173,6 @@ export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDeta
     }
 
     return result;
-}
-
-/**
- * 詳細データをキャッシュから取得するかの検証を行う
- * 
- * @param appid 検証対象の詳細データID
- * @returns キャッシュから取得する場合True、APIから取得する場合false
- */
-function isDetailCacheValid(appid: number): boolean {
-    if (!detailDataCache) return false;
-    
-    if (!detailDataCache.appidWithFetchTime.has(appid)) return false;
-
-    const preFetchTime = detailDataCache.appidWithFetchTime.get(appid);
-
-    if (!preFetchTime) return false;
-
-    // 時刻差異が指定された分数以内の場合、キャッシュから取得
-    return isWithinMinutes(preFetchTime, cacheTime.mostPlayed);
-}
-
-/**
- * 引数で渡されたIDのキャッシュデータを返却する
- * 
- * @param appidStr 取得するキャッシュデータのID（文字列）
- */
-function getDetailCache(appidStr: string) {
-    return detailDataCache.data[appidStr];
-}
-
-/**
- * キャッシュ関連のデータをセットする。
- * 
- * @param キャッシュするデータ群
- */
-function setDetailCache(appid: number, appidStr: string, data: SteamAppDetailsResponse) {
-    detailDataCache.appidWithFetchTime.set(appid, Date.now());
-    detailDataCache.data[appidStr] = data[appidStr]!;
 }
 
 /**
