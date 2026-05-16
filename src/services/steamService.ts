@@ -33,7 +33,12 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
 
     const appids: number[] = ranks.map(x => x.appid);
 
-    const detailData = await getDetailGameDatas(appids);
+    const [detailData, currentPlayer] = await Promise.all([
+        getDetailGameDatas(appids),
+        fetchCurrentPlayerCounts(appids)
+    ]);
+
+    // const detailData = await getDetailGameDatas(appids);
 
     if (!detailData || Object.keys(detailData).length === 0) {
         console.log("詳細データが取得できなかったため、nullを返却します。");
@@ -43,8 +48,8 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     // console.log("詳細データ");
     // console.log(detailData);
 
-    const currentPlayer: CurrentPlayersData = await fetchCurrentPlayerCounts(appids);
-    // console.log(currentPlayer);
+    // const currentPlayer: CurrentPlayersData = await fetchCurrentPlayerCounts(appids);
+    console.log(currentPlayer);
 
     return steamDataMarge(appids, ranks, detailData, currentPlayer);    
 }
@@ -114,7 +119,7 @@ async function fetchCurrentConnectionData(appid: number): Promise<CurrentPlayers
         return response.data;
     }
     catch (error) {
-        console.error("Steam API処理エラー", `appid: ${appid}`, error);
+        console.error("同時接続Steam API処理エラー", `appid: ${appid}`, error);
 
         // player_countはundefind
         const data: CurrentPlayersResponse = {response:{result: STEAM_API_ERROR}};
@@ -211,7 +216,7 @@ async function fetchGameDetail(appid: number): Promise<SteamAppDetailsResponse> 
         return data;
     }
     catch (error) {
-        console.error("Steam API処理エラー", error);
+        console.error("詳細情報Steam API処理エラー", error);
         throw error;
     }
 }

@@ -18,7 +18,7 @@ export async function sendGameDetailsToChannel(gameDetails:ExtendedSteamGameDeta
         const embed = createEmbed(game);
         const buttons = createButton(game);
 
-        await channel.send({ embeds: [embed], components: [buttons] });
+        // await channel.send({ embeds: [embed], components: [buttons] });
 
         // console.log("今から時を止めます");
         await setTimeout(1000);
