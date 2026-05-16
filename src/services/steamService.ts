@@ -123,12 +123,12 @@ async function fetchCurrentConnectionData(appid: number): Promise<CurrentPlayers
 }
 
 /**
- * steamAPIから取得した同時接続数データと詳細データを一つのオブジェクトにマージする
+ * steamAPIから取得した同時接続数ランキングデータと詳細データを一つのオブジェクトにマージする
  * 
  * @param appids          データID配列
- * @param mostPlayedDatas 同時接続数データ
+ * @param mostPlayedDatas 同時接続数ランキングデータ
  * @param detailData      詳細データ
- * @returns IDをキーとして同時接続数と詳細データをオブジェクトとして持つMap型オブジェクト
+ * @returns IDをキーとして同時接続数ランキングデータと詳細データをオブジェクトとして持つMap型オブジェクト
  */
 export function steamDataMarge(appids: number[], mostPlayedDatas: MostPlayedGame[], detailData:SteamAppDetailsResponse): Map<number, ExtendedSteamGameDetail> {
     const extendedSteamGame = new Map<number, ExtendedSteamGameDetail>();
