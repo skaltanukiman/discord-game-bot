@@ -61,4 +61,5 @@ export type CurrentPlayersData = {
 export type ExtendedSteamGameDetail = {
     steamDetail: SteamAppDetailsResponse[string]["data"];
     mostplayed: MostPlayedGame;
+    currentPlayers?: CurrentPlayersData[string]["data"];
 }

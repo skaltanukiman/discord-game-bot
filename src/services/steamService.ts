@@ -12,15 +12,15 @@ import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, Curre
  * 処理内容:
  * 1. 同時接続数ランキングを取得
  * 2. ランキングからappid一覧を抽出
- * 3. appidを元に詳細情報を取得
- * 4. ランキング情報と詳細情報をマージして返却
+ * 3. appidを元に詳細情報と現在同時接続数を取得
+ * 4. ランキング情報や詳細情報等のデータをマージして返却
  * 
  * @returns
  * 上位ゲームの詳細情報Map。
  * key: appid
  * value: ExtendedSteamGameDetail
  * 
- * ランキングまたは詳細情報の取得に失敗した場合はnullを返却する
+ * ランキングまたは詳細情報の取得に失敗した場合はnullを返却する（現在同時接続数は取得できなかった場合もデータなしとして処理を進める）
  */
 export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSteamGameDetail> | null> {
     const ranks = await getMostPlayedGames(mostPlayed.offset, mostPlayed.limit);
@@ -43,10 +43,10 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     // console.log("詳細データ");
     // console.log(detailData);
 
-    const currentPlayer: CurrentPlayersData = await fetchCurrentPlayerCounts(appids);  // テスト
-    console.log(currentPlayer);
+    const currentPlayer: CurrentPlayersData = await fetchCurrentPlayerCounts(appids);
+    // console.log(currentPlayer);
 
-    return steamDataMarge(appids, ranks, detailData);    
+    return steamDataMarge(appids, ranks, detailData, currentPlayer);    
 }
 
 /**
@@ -123,14 +123,15 @@ async function fetchCurrentConnectionData(appid: number): Promise<CurrentPlayers
 }
 
 /**
- * steamAPIから取得した同時接続数ランキングデータと詳細データを一つのオブジェクトにマージする
+ * steamAPIから取得した同時接続数ランキングデータや詳細データ等のデータを一つのオブジェクトにマージする
  * 
  * @param appids          データID配列
  * @param mostPlayedDatas 同時接続数ランキングデータ
  * @param detailData      詳細データ
- * @returns IDをキーとして同時接続数ランキングデータと詳細データをオブジェクトとして持つMap型オブジェクト
+ * @param currentPlayer   現在同時接続数データ
+ * @returns IDをキーとして同時接続数ランキングデータや詳細データ等をオブジェクトとして持つMap型オブジェクト
  */
-export function steamDataMarge(appids: number[], mostPlayedDatas: MostPlayedGame[], detailData:SteamAppDetailsResponse): Map<number, ExtendedSteamGameDetail> {
+export function steamDataMarge(appids: number[], mostPlayedDatas: MostPlayedGame[], detailData:SteamAppDetailsResponse, currentPlayer: CurrentPlayersData): Map<number, ExtendedSteamGameDetail> {
     const extendedSteamGame = new Map<number, ExtendedSteamGameDetail>();
 
     for (const appid of appids) {
@@ -145,7 +146,9 @@ export function steamDataMarge(appids: number[], mostPlayedDatas: MostPlayedGame
         if (!mostPlayedData) continue;
 
         const extended: ExtendedSteamGameDetail = {steamDetail: detailData[appidStr]["data"]
-                                                 , mostplayed: mostPlayedData};
+                                                 , mostplayed: mostPlayedData
+                                                 , ...(currentPlayer[appidStr] && {currentPlayers: currentPlayer[appidStr]["data"]})  // currentPlayerが存在しない場合はプロパティ自体を追加しない
+                                                };
 
         extendedSteamGame.set(appid, extended);        
     }
