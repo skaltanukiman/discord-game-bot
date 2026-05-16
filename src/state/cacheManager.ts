@@ -3,22 +3,21 @@ import { CurrentPlayersData, CurrentPlayersResponse, SteamAppDetailsResponse } f
 import { isWithinMinutes } from "../util/timeUtil.js";
 
 type mostPlayedCacheType = {
-    preOffset: number | null,
-    preLimit: number | null,
-    preFetchTime: number | null,
-    key: string | null,  // offset & limit
-    data: any
+    preOffset: number | null;
+    preLimit: number | null;
+    preFetchTime: number | null;
+    key: string | null;  // offset & limit
+    data: any;
 }
 
-type DetailDataCacheType = {
-    appidWithFetchTime: Map<number, number>,
-    data: SteamAppDetailsResponse
+type CacheType<T> = {
+    appidWithFetchTime: Map<number, number>;
+    data: T;
 }
 
-type CurrentDataCacheType = {
-    appidWithFetchTime: Map<number, number>,
-    data: CurrentPlayersData
-}
+type DetailDataCacheType = CacheType<SteamAppDetailsResponse>;
+
+type CurrentDataCacheType = CacheType<CurrentPlayersData>;
 
 export const currentDataCache: CurrentDataCacheType = {
     appidWithFetchTime: new Map<number, number>(),
