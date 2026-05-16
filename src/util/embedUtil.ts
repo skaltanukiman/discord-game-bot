@@ -35,6 +35,7 @@ export function createButton(data: ExtendedSteamGameDetail) {
 
 function pushFieldElements(data: ExtendedSteamGameDetail): APIEmbedField[] {
     const release_date = data.steamDetail.release_date;
+    const player_count = data.currentPlayers?.player_count;
 
     const fields: APIEmbedField[] = [];
 
@@ -50,6 +51,7 @@ function pushFieldElements(data: ExtendedSteamGameDetail): APIEmbedField[] {
     if (hasJapaneseLanguage(data) === false) fields.push({ name: "言語", value: "×日本語非対応" });
 
     release_date && fields.push({ name: "リリース日", value: release_date.date });
+    player_count != null && fields.push({ name: "現在プレイ人数", value: `${player_count.toLocaleString()} 人プレイ中` });
 
     return fields;
 }
