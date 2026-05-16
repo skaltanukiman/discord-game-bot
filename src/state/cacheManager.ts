@@ -1,6 +1,4 @@
-import { error } from "node:console";
-import { cacheTime } from "../config/setting.js";
-import { CurrentPlayersData, CurrentPlayersResponse, SteamAppDetailsResponse } from "../services/steamTypeManager.js";
+import { CurrentPlayersData, SteamAppDetailsResponse } from "../services/steamTypeManager.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 
 type mostPlayedCacheType = {
@@ -38,6 +36,17 @@ export const mostPlayedCache: mostPlayedCacheType = {
     data: null
 };
 
+/**
+ * 人気ゲーム一覧キャッシュを初期化する
+ * 
+ * @remarks
+ * 以下のキャッシュ情報を初期状態に戻す:
+ * - offset（前回入力条件）
+ * - limit（前回入力条件）
+ * - キャッシュ取得時刻
+ * - キャッシュキー
+ * - キャッシュデータ
+ */
 export function initializeMostPlayedCache () {
     mostPlayedCache.preOffset = null;
     mostPlayedCache.preLimit = null;
@@ -46,6 +55,21 @@ export function initializeMostPlayedCache () {
     mostPlayedCache.data = null;
 }
 
+/**
+ * 指定した appid のキャッシュが有効期限内か判定する
+ * 
+ * @param cache キャッシュデータ
+ * @param appid Steam アプリID
+ * @param limitMinutes キャッシュ有効期限（分）
+ * @returns キャッシュが存在し、有効期限内の場合は true
+ * 
+ * @remarks
+ * 以下の場合は false を返す:
+ * - キャッシュが存在しない
+ * - appid に対応する取得時刻が存在しない
+ * - キャッシュ有効期限を超過している
+ * - 判定処理中に例外が発生した
+ */
 export function hasValidCache<T>(cache: CacheType<T>, appid: number, limitMinutes: number): boolean {
     try {
         if (!cache) return false;
@@ -65,10 +89,32 @@ export function hasValidCache<T>(cache: CacheType<T>, appid: number, limitMinute
     }
 }
 
+/**
+ * 指定した appid のキャッシュデータを取得する
+ * 
+ * @param cache キャッシュデータ
+ * @param appidStr Steam アプリID文字列
+ * @returns appid に対応するキャッシュデータ
+ * 
+ * @remarks
+ * 指定した appid のデータが存在しない場合は undefined を返す。
+ */
 export function getCacheData<T extends Record<string, any>>(cache: CacheType<T>, appidStr: string) {
     return cache.data[appidStr];
 }
 
+/**
+ * 指定した appid のキャッシュデータと取得時刻を更新する
+ * 
+ * @param cache 更新対象のキャッシュデータ
+ * @param appid Steam アプリID
+ * @param appidStr Steam アプリID文字列
+ * @param data キャッシュへ保存するデータ
+ * 
+ * @remarks
+ * - キャッシュ保存時に現在時刻を取得時刻として記録する
+ * - 指定した appid のデータが存在しない場合はキャッシュ更新を行わない
+ */
 export function setCacheData<T>(cache: CacheType<Record<string, T>>, appid: number, appidStr: string, data: Record<string, T>) {
     cache.appidWithFetchTime.set(appid, Date.now());
 
@@ -78,41 +124,3 @@ export function setCacheData<T>(cache: CacheType<Record<string, T>>, appid: numb
     }
     cache.data[appidStr] = data[appidStr];
 }
-
-/**
- * 詳細データをキャッシュから取得するかの検証を行う
- * 
- * @param appid 検証対象の詳細データID
- * @returns キャッシュから取得する場合True、APIから取得する場合false
- */
-// export function isDetailCacheValid(appid: number): boolean {
-//     if (!detailDataCache) return false;
-    
-//     if (!detailDataCache.appidWithFetchTime.has(appid)) return false;
-
-//     const preFetchTime = detailDataCache.appidWithFetchTime.get(appid);
-
-//     if (!preFetchTime) return false;
-
-//     // 時刻差異が指定された分数以内の場合、キャッシュから取得
-//     return isWithinMinutes(preFetchTime, cacheTime.mostPlayed);
-// }
-
-/**
- * 引数で渡されたIDのキャッシュデータを返却する
- * 
- * @param appidStr 取得するキャッシュデータのID（文字列）
- */
-// export function getDetailCache(appidStr: string) {
-//     return detailDataCache.data[appidStr];
-// }
-
-/**
- * キャッシュ関連のデータをセットする。
- * 
- * @param キャッシュするデータ群
- */
-// export function setDetailCache(appid: number, appidStr: string, data: SteamAppDetailsResponse) {
-//     detailDataCache.appidWithFetchTime.set(appid, Date.now());
-//     detailDataCache.data[appidStr] = data[appidStr]!;
-// }
