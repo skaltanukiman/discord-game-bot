@@ -1,6 +1,8 @@
 import { CurrentPlayersData, SteamAppDetailsResponse } from "../services/steamTypeManager.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 
+//#region 型定義
+
 type mostPlayedCacheType = {
     preOffset: number | null;
     preLimit: number | null;
@@ -17,6 +19,10 @@ type CacheType<T> = {
 type DetailDataCacheType = CacheType<SteamAppDetailsResponse>;
 
 type CurrentDataCacheType = CacheType<CurrentPlayersData>;
+
+//#endregion
+
+//#region キャッシュインスタンス
 
 export const currentDataCache: CurrentDataCacheType = {
     appidWithFetchTime: new Map<number, number>(),
@@ -35,6 +41,8 @@ export const mostPlayedCache: mostPlayedCacheType = {
     key: null,
     data: null
 };
+
+//#endregion
 
 /**
  * 人気ゲーム一覧キャッシュを初期化する
