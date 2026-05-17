@@ -52,7 +52,7 @@ export const testSettings: testSettingsType = {
 
 export const mostPlayed: MostPlayedType = {
     offset: 0,
-    limit: 2
+    limit: 20
 }
 
 export const concurrencyOptions: ConcurrencyOptionsType = {

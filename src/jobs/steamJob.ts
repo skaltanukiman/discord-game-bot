@@ -2,7 +2,7 @@ import { ActionRowBuilder, APIEmbed, ButtonBuilder, ButtonStyle, Client, EmbedBu
 import { getMostPlayedGameDetails } from "../services/steamService.js";
 import { categoryGroups } from "../structure/categorise.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
-import { filterMultiplayerGames } from "../util/filtering.js";
+import { filterMultiplayerGames, pickRandomvaluesFromMap } from "../util/filtering.js";
 import { testSettings } from "../config/setting.js";
 import { createEmbed } from "../util/embedUtil.js";
 import { sendGameDetailsToChannel } from "../services/embedService.js"
@@ -28,10 +28,15 @@ export async function runGameRecommendationJob(channel: TextChannel) {
     }
 
     if (testSettings.testmode) {
-        const gameDetails: ExtendedSteamGameDetail[] = [];
-        for (const val of filteredMap.values()) {
-            gameDetails.push(val);
-        }
+        // const gameDetails: ExtendedSteamGameDetail[] = [];
+
+        // 全件
+        // for (const val of filteredMap.values()) {
+        //     gameDetails.push(val);
+        // }
+
+        // ランダム（要素数指定）
+        const gameDetails: ExtendedSteamGameDetail[] = pickRandomvaluesFromMap(filteredMap, 15);
         
         // filterMapよりDISCORDに送りたいものだけをgameDetailsに配列として格納し、[sendGameDetailsToChannel]を叩く
 
