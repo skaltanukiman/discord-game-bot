@@ -19,5 +19,6 @@ function getEnv(name: string) {
 export const env = {
     discordToken: getEnv("DISCORD_TOKEN"),
     channelId: getEnv("CHANNEL_ID"),
-    steamApiKey: getEnv("STEAM_API_KEY")
+    steamApiKey: getEnv("STEAM_API_KEY"),
+    openaiApiKey: getEnv("OPENAI_API_KEY")
 };
