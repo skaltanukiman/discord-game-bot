@@ -7,7 +7,7 @@ type cacheTimeType = {
 export const cacheTime: cacheTimeType = {
     mostPlayed: 1,    // 分
     detailData: 1,  // 分（1440:一日）
-    currentPlayer: 60
+    currentPlayer: 1
 }
 
 type cronCycleType = {

@@ -66,7 +66,8 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
  */
 async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayersData> {
     const result: CurrentPlayersData = {};
-    // 処理を並列化する
+
+    const needFetch: number[] = [];
 
     for (const appid of appids) {
         const appidStr = String(appid);
@@ -77,40 +78,41 @@ async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayer
             result[appidStr] = getCacheData(currentDataCache, appidStr)!;
         }
         else {
-            // 存在しなければAPIから取得
-            // console.log("APIからDetailデータを取得");
-            const data: CurrentPlayersResponse = await fetchCurrentConnectionData(appid);
-            if (data.response.player_count != null) {
-                result[appidStr] = {
-                    data: {
-                        player_count: data.response.player_count
-                    }
-                };
-
-                setCacheData(currentDataCache, appid, appidStr, result);
-            }
+            needFetch.push(appid);
         }
     }
+
+    const fetched: CurrentPlayersData = await fetchInBatches(needFetch, 10, getCurrentPlayer);
+
+    for (const appidStr of Object.keys(fetched)) {
+        const appid = Number(appidStr);
+
+        if (!Number.isNaN(appid)) setCacheData(currentDataCache, appid, appidStr, fetched);
+    }
+
+    Object.assign(result, fetched);
 
     return result;
 }
 
-async function getCurrentPlayer(appid: number) {
+async function getCurrentPlayer(appid: number): Promise<CurrentPlayersData> {
     const result: CurrentPlayersData = {};
     const appidStr = String(appid);
 
     const data: CurrentPlayersResponse = await fetchCurrentConnectionData(appid);
-    if (data.response.player_count != null) {
+    if (data.response.player_count == null) {
+        console.log(`同時接続数取得不可`);
+        return {};
+    }
+    else {
         result[appidStr] = {
             data: {
                 player_count: data.response.player_count
             }
         };
 
-        setCacheData(currentDataCache, appid, appidStr, result);
+        return result;
     }
-
-    return result;
 }
 
 /**
@@ -191,7 +193,7 @@ export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDeta
 
         if (hasValidCache(detailDataCache, appid, cacheTime.detailData)) {
             // appidがキャッシュに存在すればキャッシュから
-            console.log("キャッシュからDetailデータを取得");
+            // console.log("キャッシュからDetailデータを取得");
             result[appidStr] = getCacheData(detailDataCache, appidStr)!;
         }
         else {
