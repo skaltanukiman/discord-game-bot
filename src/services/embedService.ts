@@ -16,7 +16,7 @@ import { generalSetting } from "../config/setting.js";
 export async function sendGameDetailsToChannel(gameDetails:ExtendedSteamGameDetail[], channel: TextChannel) {
 
     for (const game of gameDetails) {
-        const embed = createEmbed(game);
+        const embed = await createEmbed(game);
         const buttons = createButton(game);
 
         if (generalSetting.send.gameDetails) {

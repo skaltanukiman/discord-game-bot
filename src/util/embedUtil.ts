@@ -1,23 +1,27 @@
 import { ActionRowBuilder, APIEmbedField, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 import { addFieldsIfExists } from "../helper/embedHelper.js";
-import { testSettings } from "../config/setting.js";
+import { generalSetting, testSettings } from "../config/setting.js";
 import { formatCategories, formatGenres } from "../formatter/steamDataFormatter.js";
 import { priceInfoMapping } from "../local/localMapping.js";
 import { removeHtmlTag } from "../formatter/textFormatter.js";
 import { detailFieldsSelector } from "../config/sendItemSetting.js";
+import { generateGameDescription } from "../services/openaiService.js";
 
-export function createEmbed(data: ExtendedSteamGameDetail) {
+export async function createEmbed(data: ExtendedSteamGameDetail) {
     const title = data.steamDetail.name;
     const headerImage = data.steamDetail.header_image;
+    
+    const embed = new EmbedBuilder().setTitle(title);
 
-    // ここにopenaiを使用し、文章を生成する処理を入れる
-
-
-    const embed = new EmbedBuilder()
-        .setTitle(title)
-        .setDescription("テスト送信");
-
+    if (generalSetting.api.descriptionGenerate) {
+        const geDescription = await generateGameDescription(data);
+        embed.setDescription(geDescription);
+    }
+    else {
+        embed.setDescription("openapi不使用");
+    }
+        
     // ヘッダーイメージがある場合のみ追加する
     headerImage && embed.setImage(headerImage);
 
