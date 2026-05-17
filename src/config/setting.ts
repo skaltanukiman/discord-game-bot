@@ -6,8 +6,8 @@ type cacheTimeType = {
 
 export const cacheTime: cacheTimeType = {
     mostPlayed: 1,    // 分
-    detailData: 1,  // 分（1440:一日）
-    currentPlayer: 1
+    detailData: 1440,  // 分（1440:一日）
+    currentPlayer: 60
 }
 
 type cronCycleType = {
@@ -35,4 +35,14 @@ type MostPlayedType = {
 export const mostPlayed: MostPlayedType = {
     offset: 0,
     limit: 5
+}
+
+type ConcurrencyOptionsType = {
+    gameDetail: number;
+    currentPlayer: number;
+}
+
+export const concurrencyOptions: ConcurrencyOptionsType = {
+    gameDetail: 10,
+    currentPlayer: 10
 }

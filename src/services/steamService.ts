@@ -3,7 +3,7 @@ import { env } from "../config/env.js";
 import { mostPlayedCache, initializeMostPlayedCache, currentDataCache, hasValidCache, detailDataCache, getCacheData, setCacheData } from "../state/cacheManager.js";
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
-import { cacheTime, mostPlayed } from "../config/setting.js";
+import { cacheTime, mostPlayed, concurrencyOptions } from "../config/setting.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, CurrentPlayersResponse, CurrentPlayersData } from "../services/steamTypeManager.js";
 import { fetchInBatches } from "../batch/apiBatches.js";
 
@@ -82,7 +82,7 @@ async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayer
         }
     }
 
-    const fetched: CurrentPlayersData = await fetchInBatches(needFetch, 10, getCurrentPlayer);
+    const fetched: CurrentPlayersData = await fetchInBatches(needFetch, concurrencyOptions.currentPlayer, getCurrentPlayer);
 
     for (const appidStr of Object.keys(fetched)) {
         const appid = Number(appidStr);
@@ -201,7 +201,7 @@ export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDeta
         }
     }
 
-    const fetched: SteamAppDetailsResponse = await fetchInBatches(needFetch, 10, fetchGameDetail);
+    const fetched: SteamAppDetailsResponse = await fetchInBatches(needFetch, concurrencyOptions.gameDetail, fetchGameDetail);
 
     for (const appidStr of Object.keys(fetched)) {
         const appid = Number(appidStr);
