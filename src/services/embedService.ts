@@ -2,6 +2,7 @@ import { ExtendedSteamGameDetail } from "./steamTypeManager.js";
 import { createButton, createEmbed } from "../util/embedUtil.js";
 import { TextChannel } from "discord.js";
 import { setTimeout } from "timers/promises";
+import { generalSetting } from "../config/setting.js";
 
 /**
  * ゲーム詳細情報をDiscordチャンネルへ順番に送信する
@@ -18,8 +19,10 @@ export async function sendGameDetailsToChannel(gameDetails:ExtendedSteamGameDeta
         const embed = createEmbed(game);
         const buttons = createButton(game);
 
-        // await channel.send({ embeds: [embed], components: [buttons] });
-
+        if (generalSetting.send.gameDetails) {
+            await channel.send({ embeds: [embed], components: [buttons] });
+        }
+        
         // console.log("今から時を止めます");
         await setTimeout(1000);
         // console.log("動きました");

@@ -24,6 +24,12 @@ type ConcurrencyOptionsType = {
     currentPlayer: number;
 }
 
+type GeneralSettingType = {
+    send: {
+        gameDetails: boolean;
+    };
+}
+
 //#endregion
 
 export const cacheTime: cacheTimeType = {
@@ -49,4 +55,10 @@ export const mostPlayed: MostPlayedType = {
 export const concurrencyOptions: ConcurrencyOptionsType = {
     gameDetail: 10,
     currentPlayer: 10
+}
+
+export const generalSetting: GeneralSettingType = {
+    send: {
+        gameDetails: true
+    }
 }
