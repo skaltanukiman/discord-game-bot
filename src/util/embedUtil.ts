@@ -2,9 +2,10 @@ import { ActionRowBuilder, APIEmbedField, ButtonBuilder, ButtonStyle, EmbedBuild
 import { ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 import { addFieldsIfExists } from "../helper/embedHelper.js";
 import { testSettings } from "../config/setting.js";
-import { formatGenres } from "../formatter/steamDataFormatter.js";
+import { formatCategories, formatGenres } from "../formatter/steamDataFormatter.js";
 import { priceInfoMapping } from "../local/localMapping.js";
 import { removeHtmlTag } from "../formatter/textFormatter.js";
+import { detailFieldsSelector } from "../config/sendItemSetting.js";
 
 export function createEmbed(data: ExtendedSteamGameDetail) {
     const title = data.steamDetail.name;
@@ -39,21 +40,39 @@ function pushFieldElements(data: ExtendedSteamGameDetail): APIEmbedField[] {
 
     const fields: APIEmbedField[] = [];
 
-    const genre = formatGenres(data);
+    if (detailFieldsSelector.Genres) addGenresFields(fields, data);
 
-    if (genre) {
-        // ジャンルがundefindでないときのみ追加
-        fields.push({ name: "ジャンル", value: genre });
+    if (detailFieldsSelector.Categorise) addCategoriseFields(fields, data);
+
+    if (detailFieldsSelector.Price) addPriceFields(fields, data, [priceInfoMapping.lang.JPY]);
+    
+    if (detailFieldsSelector.release_date) release_date && fields.push({ name: "リリース日", value: release_date.date });
+    
+    if (detailFieldsSelector.currentPlayers) player_count != null && fields.push({ name: "現在プレイ人数", value: `${player_count.toLocaleString()} 人プレイ中` });
+
+    if (detailFieldsSelector.hasJapaneseLanguage) {
+        if (hasJapaneseLanguage(data) === false) fields.push({ name: "言語", value: "×日本語非対応" });
     }
 
-    addPriceFields(fields, data, [priceInfoMapping.lang.JPY]);
-
-    if (hasJapaneseLanguage(data) === false) fields.push({ name: "言語", value: "×日本語非対応" });
-
-    release_date && fields.push({ name: "リリース日", value: release_date.date });
-    player_count != null && fields.push({ name: "現在プレイ人数", value: `${player_count.toLocaleString()} 人プレイ中` });
-
     return fields;
+}
+
+function addGenresFields(fields: APIEmbedField[], data: ExtendedSteamGameDetail) {
+    const genres = formatGenres(data);
+
+    if (genres) {
+        // ジャンルがundefindでないときのみ追加
+        fields.push({ name: "ジャンル", value: genres });
+    }
+}
+
+function addCategoriseFields(fields: APIEmbedField[], data: ExtendedSteamGameDetail) {
+    const categories = formatCategories(data);
+
+    if (categories) {
+        // カテゴリーがundefindでないときのみ追加
+        fields.push({ name: "カテゴリー", value: categories });
+    }
 }
 
 /**
