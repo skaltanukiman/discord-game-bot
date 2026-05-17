@@ -11,6 +11,9 @@ export function createEmbed(data: ExtendedSteamGameDetail) {
     const title = data.steamDetail.name;
     const headerImage = data.steamDetail.header_image;
 
+    // ここにopenaiを使用し、文章を生成する処理を入れる
+
+
     const embed = new EmbedBuilder()
         .setTitle(title)
         .setDescription("テスト送信");
