@@ -59,6 +59,6 @@ export const concurrencyOptions: ConcurrencyOptionsType = {
 
 export const generalSetting: GeneralSettingType = {
     send: {
-        gameDetails: true
+        gameDetails: false
     }
 }

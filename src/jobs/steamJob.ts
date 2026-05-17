@@ -7,7 +7,7 @@ import { testSettings } from "../config/setting.js";
 import { createEmbed } from "../util/embedUtil.js";
 import { sendGameDetailsToChannel } from "../services/embedService.js"
 
-export async function runGameRecommendationJob(client: Client, channel: TextChannel) {
+export async function runGameRecommendationJob(channel: TextChannel) {
 
     const steamDataMap = await getMostPlayedGameDetails();
 
@@ -37,6 +37,5 @@ export async function runGameRecommendationJob(client: Client, channel: TextChan
 
         await sendGameDetailsToChannel(gameDetails, channel);
     }
-
 
 }

@@ -1,16 +1,17 @@
-import { Client, ChannelType, TextChannel } from "discord.js";
+import { ChannelType, TextChannel } from "discord.js";
 import { env } from "../config/env.js";
+import { discordClient } from "../index.js";
 
 /**
  * ログイン完了時に、指定されたテキストチャンネルを取得する
  * 
- * @param client Discordクライアント
+ * @param discordClient Discordクライアント
  * @returns 取得したテキストチャンネル。取得できなかった場合、またはテキストチャンネルでない場合は null
  */
-export async function onReady(client: Client): Promise<TextChannel | null> {
-    console.log(`Logged in as ${client.user?.tag}`);
+export async function onReady(): Promise<TextChannel | null> {
+    console.log(`Logged in as ${discordClient.user?.tag}`);
 
-    const channel = await client.channels.fetch(env.channelId);
+    const channel = await discordClient.channels.fetch(env.channelId);
 
     if (!channel) {
         console.log("チャンネルが見つかりません");

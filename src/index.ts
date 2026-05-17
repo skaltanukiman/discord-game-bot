@@ -7,15 +7,15 @@ import { Client, GatewayIntentBits, EmbedBuilder  } from "discord.js";
 import cron from "node-cron";
 
 /** 初期処理 **/
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+export const discordClient = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 /** イベント処理 **/
 
 // botログイン完了時発火
-client.once("clientReady", async () => {
+discordClient.once("clientReady", async () => {
 
     // チャンネルを取得
-    const channel = await onReady(client);
+    const channel = await onReady();
 
     if (!channel) {
         console.log("チャンネル取得失敗のため終了します");
@@ -32,14 +32,14 @@ client.once("clientReady", async () => {
     //     process.exit(0);
     // }
 
-    await runGameRecommendationJob(client, channel);
+    await runGameRecommendationJob(channel);
 
     // 定期実行
     cron.schedule(cronCycle.index, async () => {
 
         try {
             console.log("定期実行開始");
-            await runGameRecommendationJob(client, channel);
+            await runGameRecommendationJob(channel);
         }
         catch (error) {
             console.error("cron実行中エラー", error);
@@ -49,7 +49,7 @@ client.once("clientReady", async () => {
 });
 
 /** 起動時処理 **/
-client.login(env.discordToken)
+discordClient.login(env.discordToken)
     .catch(error => {
         console.error("Botログイン失敗", error);
         process.exit(1);
