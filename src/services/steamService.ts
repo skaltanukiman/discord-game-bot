@@ -56,13 +56,19 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
 }
 
 /**
- * 指定した Steam アプリID一覧の現在プレイ人数を取得する
+ * 指定した appid 群の現在の同時接続数を取得します。
  * 
- * @param appids Steam アプリID配列
- * @returns appid をキー、現在プレイ人数の項目を持つオブジェクト
+ * 有効なキャッシュが存在する場合はキャッシュデータを使用し、
+ * 未取得または期限切れの appid のみ API から取得します。
  * 
- * @remarks
- * プレイ人数の取得に失敗した appid は結果に含めない。
+ * API取得時は fetchInBatches を利用して一定数ずつ並列実行し、
+ * 同時リクエスト数を制御しています。
+ * 
+ * 取得したデータはキャッシュへ保存後、
+ * キャッシュ取得分とマージして返却します。
+ * 
+ * @param appids 取得対象の Steam appid 配列
+ * @returns appid をキーとした同時接続数データ
  */
 async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayersData> {
     const result: CurrentPlayersData = {};
@@ -95,6 +101,18 @@ async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayer
     return result;
 }
 
+/**
+ * 指定した appid の現在の同時接続数を取得します。
+ * 
+ * Steam API から同時接続数を取得し、
+ * appid をキーとしたオブジェクト形式で返却します。
+ * 
+ * 同時接続数が取得できなかった場合は、
+ * 空オブジェクト({})を返します。
+ * 
+ * @param appid 取得対象の Steam appid
+ * @returns appid をキーとした同時接続数データ
+ */
 async function getCurrentPlayer(appid: number): Promise<CurrentPlayersData> {
     const result: CurrentPlayersData = {};
     const appidStr = String(appid);
@@ -183,6 +201,21 @@ export function steamDataMarge(appids: number[], mostPlayedDatas: MostPlayedGame
     return extendedSteamGame;
 }
 
+/**
+ * 指定した appid 群のゲーム詳細情報を取得します。
+ * 
+ * キャッシュに有効なデータが存在する場合はキャッシュを使用し、
+ * 未取得または期限切れの appid のみを API から取得します。
+ * 
+ * API取得時は fetchInBatches を使用して一定数ずつ並列実行し、
+ * 同時リクエスト数を制御しています。
+ * 
+ * 取得したデータはキャッシュへ保存後、
+ * キャッシュ取得分とマージして返却します。
+ * 
+ * @param appids 取得対象の Steam appid 配列
+ * @returns appid をキーとしたゲーム詳細情報
+ */
 export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDetailsResponse> {
     const result: SteamAppDetailsResponse = {};
 
@@ -213,38 +246,6 @@ export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDeta
 
     return result;
 }
-
-
-/**
- * 渡されたappidの詳細データを取得し返却する
- * 
- * @param appids 取得対象の詳細データID配列
- * @returns 詳細データ
- */
-// export async function getDetailGameDatas(appids: number[]): Promise<SteamAppDetailsResponse> {
-//     const result: SteamAppDetailsResponse = {};
-
-//     for (const appid of appids) {
-//         const appidStr = String(appid);
-
-//         if (hasValidCache(detailDataCache, appid, cacheTime.detailData)) {
-//             // appidがキャッシュに存在すればキャッシュから
-//             // console.log("キャッシュからDetailデータを取得");
-//             result[appidStr] = getCacheData(detailDataCache, appidStr)!;
-//         }
-//         else {
-//             // 存在しなければAPIから取得
-//             // console.log("APIからDetailデータを取得");
-//             const detail: SteamAppDetailsResponse = await fetchGameDetail(appid);
-//             result[appidStr] = detail[appidStr]!;
-
-//             setCacheData(detailDataCache, appid, appidStr, detail);
-//             // console.log(`time: ${detailDataCache.appidWithFetchTime.get(appid)}`)
-//         }
-//     }
-
-//     return result;
-// }
 
 /**
  * appidで指定したIDの詳細データを取得し、返却する
