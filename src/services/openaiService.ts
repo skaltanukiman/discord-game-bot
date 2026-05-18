@@ -1,6 +1,5 @@
-import { Models } from "openai/resources";
 import { formatGenres } from "../formatter/steamDataFormatter.js";
-import { openai } from "../index.js";
+import { openai } from "../clients/openaiClient.js";
 import { PromptsType } from "./openaiTypeManager.js";
 import { ExtendedSteamGameDetail } from "./steamTypeManager.js";
 

@@ -2,16 +2,13 @@ import "dotenv/config";
 import { env } from "./config/env.js";
 import { onReady } from "./events/ready.js";
 import { runGameRecommendationJob } from "./jobs/steamJob.js";
-import { cronCycle, processControl, testSettings } from "./config/setting.js";
+import { processControl, testSettings } from "./config/setting.js";
 import { Client, GatewayIntentBits, EmbedBuilder  } from "discord.js";
-import OpenAI from "openai";
-import cron from "node-cron";
 import { interactionCreateEvent } from "./events/interactionCreate.js";
 import { startScheduler } from "./jobs/scheduler.js";
 
 /** 初期処理 **/
 export const discordClient = new Client({ intents: [GatewayIntentBits.Guilds] });
-export const openai = new OpenAI({apiKey: env.openaiApiKey});
 
 /** イベント処理 **/
 
