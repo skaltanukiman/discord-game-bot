@@ -65,6 +65,6 @@ export const generalSetting: GeneralSettingType = {
         gameDetails: true
     },
     api: {
-        descriptionGenerate: false
+        descriptionGenerate: false    // ゲーム説明欄テキストをopenaiAPIを使用し、ランダム生成するか
     }
 }
