@@ -2,11 +2,12 @@ import "dotenv/config";
 import { env } from "./config/env.js";
 import { onReady } from "./events/ready.js";
 import { runGameRecommendationJob } from "./jobs/steamJob.js";
-import { cronCycle, testSettings } from "./config/setting.js";
+import { cronCycle, processControl, testSettings } from "./config/setting.js";
 import { Client, GatewayIntentBits, EmbedBuilder  } from "discord.js";
 import OpenAI from "openai";
 import cron from "node-cron";
 import { interactionCreateEvent } from "./events/interactionCreate.js";
+import { startScheduler } from "./jobs/scheduler.js";
 
 /** 初期処理 **/
 export const discordClient = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -35,20 +36,14 @@ discordClient.once("clientReady", async () => {
     //     process.exit(0);
     // }
 
-    await runGameRecommendationJob(channel);
+    if (processControl.enable.recommendationJob) {
+        // 起動時1回実行
+        await runGameRecommendationJob(channel);
 
-    // 定期実行
-    cron.schedule(cronCycle.index, async () => {
+        // 定期実行（スケジュール実行）
+        startScheduler(channel);
+    }
 
-        try {
-            console.log("定期実行開始");
-            await runGameRecommendationJob(channel);
-        }
-        catch (error) {
-            console.error("cron実行中エラー", error);
-            process.exit(1);
-        }
-    });
 });
 
 // interactionCreate 発生時、interactionCreateEvent() を呼ぶ

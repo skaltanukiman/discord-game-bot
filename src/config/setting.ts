@@ -33,6 +33,12 @@ type GeneralSettingType = {
     };
 }
 
+type ProcessControlType = {
+    enable: {
+        recommendationJob: boolean;
+    };
+}
+
 //#endregion
 
 export const cacheTime: cacheTimeType = {
@@ -52,7 +58,7 @@ export const testSettings: testSettingsType = {
 
 export const mostPlayed: MostPlayedType = {
     offset: 0,
-    limit: 20
+    limit: 5
 }
 
 export const concurrencyOptions: ConcurrencyOptionsType = {
@@ -66,5 +72,11 @@ export const generalSetting: GeneralSettingType = {
     },
     api: {
         descriptionGenerate: false    // ゲーム説明欄テキストをopenaiAPIを使用し、ランダム生成するか
+    }
+}
+
+export const processControl: ProcessControlType = {
+    enable: {
+        recommendationJob: true
     }
 }
