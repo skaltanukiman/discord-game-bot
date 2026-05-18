@@ -6,6 +6,7 @@ import { cronCycle, testSettings } from "./config/setting.js";
 import { Client, GatewayIntentBits, EmbedBuilder  } from "discord.js";
 import OpenAI from "openai";
 import cron from "node-cron";
+import { interactionCreateEvent } from "./events/interactionCreate.js";
 
 /** 初期処理 **/
 export const discordClient = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -49,6 +50,9 @@ discordClient.once("clientReady", async () => {
         }
     });
 });
+
+// interactionCreate 発生時、interactionCreateEvent() を呼ぶ
+discordClient.on("interactionCreate", interactionCreateEvent);
 
 /** 起動時処理 **/
 discordClient.login(env.discordToken)

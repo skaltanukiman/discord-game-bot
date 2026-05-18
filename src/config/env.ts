@@ -20,5 +20,7 @@ export const env = {
     discordToken: getEnv("DISCORD_TOKEN"),
     channelId: getEnv("CHANNEL_ID"),
     steamApiKey: getEnv("STEAM_API_KEY"),
-    openaiApiKey: getEnv("OPENAI_API_KEY")
+    openaiApiKey: getEnv("OPENAI_API_KEY"),
+    clientId: getEnv("CLIENT_ID"),
+    guildId: getEnv("GUILD_ID")
 };
