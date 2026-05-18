@@ -77,6 +77,6 @@ export const generalSetting: GeneralSettingType = {
 
 export const processControl: ProcessControlType = {
     enable: {
-        recommendationJob: true
+        recommendationJob: false
     }
 }

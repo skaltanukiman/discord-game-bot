@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { env } from "./config/env.js";
 import { REST, Routes } from "discord.js";
 import { pingCommand } from "./commands/ping.js";
