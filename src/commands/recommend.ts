@@ -1,11 +1,13 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, TextChannel } from "discord.js";
 import { runGameRecommendByRankJob } from "../jobs/commandJob.js";
 import { RecommendMode } from "./commandCommonVal.js";
+import { requestContext } from "../context/requestContext.js";
 
 const commandStr = {
     recommend: {
         count: "count",
-        sortMode: "sort_mode"
+        sortMode: "sort_mode",
+        useOpenAI: "use_openai"
     }
 }
 
@@ -31,6 +33,12 @@ export const recommendCommand = {
                     { name: "ランク順", value: RecommendMode.Rank },
                     { name: "ランダム", value: RecommendMode.Random }
                   )
+        )
+        
+        .addBooleanOption(option =>
+            option.setName(commandStr.recommend.useOpenAI)
+                  .setDescription("OpenAIで説明文を生成する")
+                  .setRequired(false)
         ),
 
     execute: async (interaction: ChatInputCommandInteraction) => {
@@ -48,7 +56,15 @@ export const recommendCommand = {
                 return;
             }
 
-            await runGameRecommendByRankJob(channel, count, mode);
+            requestContext.run(
+                {
+                    useOpenAI: interaction.options.getBoolean(commandStr.recommend.useOpenAI) ?? false
+                },
+                async () => {
+                    await runGameRecommendByRankJob(channel, count, mode);
+                }
+            );
+            
 
             await interaction.editReply("おすすめゲームを送信しました");
         }

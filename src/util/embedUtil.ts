@@ -7,6 +7,7 @@ import { priceInfoMapping } from "../local/localMapping.js";
 import { removeHtmlTag } from "../formatter/textFormatter.js";
 import { detailFieldsSelector } from "../config/sendItemSetting.js";
 import { generateGameDescription } from "../services/openaiService.js";
+import { requestContext } from "../context/requestContext.js";
 
 export async function createEmbed(data: ExtendedSteamGameDetail) {
     const title = data.steamDetail.name;
@@ -14,7 +15,10 @@ export async function createEmbed(data: ExtendedSteamGameDetail) {
     
     const embed = new EmbedBuilder().setTitle(title);
 
-    if (generalSetting.api.descriptionGenerate) {
+    const context = requestContext.getStore();
+    if (generalSetting.api.descriptionGenerate && (context?.useOpenAI ?? true)) {
+        // セッティングのAPI使用設定がtrueの場合かつコンテキストがtrue（undefindの場合も許可）
+
         const geDescription = await generateGameDescription(data);
         embed.setDescription(geDescription);
     }
