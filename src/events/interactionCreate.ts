@@ -3,11 +3,19 @@ import { commands } from "../managers/commandManager.js";
 
 export async function interactionCreateEvent(interaction: Interaction) {
 
-    if (!interaction.isChatInputCommand()) return;
+    try {
+        if (!interaction.isChatInputCommand()) return;
 
-    const command = commands.get(interaction.commandName);
+        const command = commands.get(interaction.commandName);
 
-    if (!command) return;
+        if (!command) {
+            console.error("コマンドが取得できませんでした。");
+        }
 
-    await command.execute(interaction);
+        await command.execute(interaction);
+    }
+    catch (error) {
+        console.error("interactionCreateエラー", error);
+    }
+
 }

@@ -3,5 +3,5 @@ import { recommendCommand } from "../commands/recommend.js";
 
 export const commands = new Map();
 
-commands.set("ping", pingCommand);
-commands.set("recommend", recommendCommand);
+commands.set(pingCommand.data.name, pingCommand);
+commands.set(recommendCommand.data.name, recommendCommand);

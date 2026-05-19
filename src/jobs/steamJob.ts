@@ -25,6 +25,7 @@ export async function runGameRecommendationJob(channel: TextChannel) {
 
     if (filteredMap.size === 0) {
         console.log("フィルター結果が空のため、処理をスキップします。");
+        return;
     }
 
     if (testSettings.testmode) {

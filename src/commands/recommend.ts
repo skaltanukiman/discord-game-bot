@@ -1,24 +1,64 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, TextChannel } from "discord.js";
-import { runGameRecommendationJob } from "../jobs/steamJob.js";
+import { runGameRecommendByRankJob } from "../jobs/commandJob.js";
+import { RecommendMode } from "./commandCommonVal.js";
+
+const commandStr = {
+    recommend: {
+        count: "count",
+        sortMode: "sort_mode"
+    }
+}
 
 export const recommendCommand = {
 
-    data: new SlashCommandBuilder().setName("recommend").setDescription("おすすめゲームを表示します"),
+    data: new SlashCommandBuilder()
+        .setName("period_ranking")
+        .setDescription("STEAM同時接続ランキング（一定期間）よりおすすめゲームを表示します（最大20件）")
+        
+        .addIntegerOption(option =>
+            option.setName(commandStr.recommend.count)
+                  .setDescription("取得件数")
+                  .setRequired(false)
+                  .setMinValue(1)
+                  .setMaxValue(20)
+        )
+        
+        .addIntegerOption(option =>
+            option.setName(commandStr.recommend.sortMode)
+                  .setDescription("抽出モード")
+                  .setRequired(false)
+                  .addChoices(
+                    { name: "ランク順", value: RecommendMode.Rank },
+                    { name: "ランダム", value: RecommendMode.Random }
+                  )
+        ),
 
     execute: async (interaction: ChatInputCommandInteraction) => {
 
-        await interaction.deferReply();
+        try {
+            await interaction.deferReply();
 
-        const channel = interaction.channel;
+            const count = interaction.options.getInteger(commandStr.recommend.count) ?? 5;
+            const mode = interaction.options.getInteger(commandStr.recommend.sortMode) ?? RecommendMode.Rank;
 
-        if (!channel || !(channel instanceof TextChannel)) {
-            await interaction.followUp("テキストチャンネルで実行してください。");
-            return;
+            const channel = interaction.channel;
+
+            if (!channel || !(channel instanceof TextChannel)) {
+                await interaction.editReply("テキストチャンネルで実行してください。");
+                return;
+            }
+
+            await runGameRecommendByRankJob(channel, count, mode);
+
+            await interaction.editReply("おすすめゲームを送信しました");
         }
+        catch(error) {
+            console.error(`${recommendCommand}内でエラー発生`, error);
 
-        await runGameRecommendationJob(channel);
-
-        await interaction.editReply("おすすめゲームを送信しました");
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply("コマンド処理中にエラーが発生しました");
+            }
+        }
 
     }
 

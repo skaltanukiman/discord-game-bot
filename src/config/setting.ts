@@ -42,7 +42,7 @@ type ProcessControlType = {
 //#endregion
 
 export const cacheTime: cacheTimeType = {
-    mostPlayed: 1,    // 分
+    mostPlayed: 10,    // 分
     detailData: 1440,  // 分（1440:一日）
     currentPlayer: 60
 }
@@ -58,7 +58,7 @@ export const testSettings: testSettingsType = {
 
 export const mostPlayed: MostPlayedType = {
     offset: 0,
-    limit: 5
+    limit: 0
 }
 
 export const concurrencyOptions: ConcurrencyOptionsType = {
@@ -77,6 +77,6 @@ export const generalSetting: GeneralSettingType = {
 
 export const processControl: ProcessControlType = {
     enable: {
-        recommendationJob: false
+        recommendationJob: false  // 起動時にゲーム紹介通知を走らせるか
     }
 }
