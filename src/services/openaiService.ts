@@ -3,6 +3,8 @@ import { openai } from "../clients/openaiClient.js";
 import { PromptsType } from "./openaiTypeManager.js";
 import { ExtendedSteamGameDetail } from "./steamTypeManager.js";
 
+export const GENERATION_LIMIT = 5;
+
 export async function generateGameDescription(data: ExtendedSteamGameDetail): Promise<string> {
     const prompts: PromptsType = createPrompt(data);
 

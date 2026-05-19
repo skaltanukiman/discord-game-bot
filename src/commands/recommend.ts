@@ -2,6 +2,7 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, TextChannel } from "d
 import { runGameRecommendByRankJob } from "../jobs/commandJob.js";
 import { RecommendMode } from "./commandCommonVal.js";
 import { requestContext } from "../context/requestContext.js";
+import { GENERATION_LIMIT } from "../services/openaiService.js";
 
 const commandStr = {
     recommend: {
@@ -37,7 +38,7 @@ export const recommendCommand = {
         
         .addBooleanOption(option =>
             option.setName(commandStr.recommend.useOpenAI)
-                  .setDescription("OpenAIで説明文を生成する")
+                  .setDescription(`OpenAIで説明文を生成する（一回のリクエストにつき最大連続${GENERATION_LIMIT}件まで）`)
                   .setRequired(false)
         ),
 
@@ -58,7 +59,8 @@ export const recommendCommand = {
 
             requestContext.run(
                 {
-                    useOpenAI: interaction.options.getBoolean(commandStr.recommend.useOpenAI) ?? false
+                    useOpenAI: interaction.options.getBoolean(commandStr.recommend.useOpenAI) ?? false,
+                    generateCount: 0
                 },
                 async () => {
                     await runGameRecommendByRankJob(channel, count, mode);
