@@ -14,13 +14,17 @@ export const logger = winston.createLogger({
     level: "info",
 
     format: winston.format.combine(
+        winston.format.errors({ stack: true }),
+
         winston.format.timestamp({
             format: () =>
                 formatInTimeZone(new Date(), "Asia/Tokyo", "yyyy-MM-dd HH:mm:ss")
         }),
-        
-        winston.format.printf(({ timestamp, level, message }) => {
-            return `[${timestamp}] [${level}] ${message}`;
+
+        winston.format.printf(({ timestamp, level, message, stack }) => {
+            return stack ?
+                    `[${timestamp}] [${level}] ${message}\n${stack}` :
+                    `[${timestamp}] [${level}] ${message}`;
         })
     ),
 

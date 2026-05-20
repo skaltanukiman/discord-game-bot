@@ -6,6 +6,7 @@ import { processControl, testSettings } from "./config/setting.js";
 import { interactionCreateEvent } from "./events/interactionCreate.js";
 import { startScheduler } from "./jobs/scheduler.js";
 import { discordClient } from "./clients/discordClient.js";
+import { logger } from "./util/logger.js";
 
 /** イベント処理 **/
 
@@ -16,7 +17,7 @@ discordClient.once("clientReady", async () => {
     const channel = await onReady();
 
     if (!channel) {
-        console.log("チャンネル取得失敗のため終了します");
+        logger.warn("チャンネル取得失敗のため終了します");
         process.exit(0);
     }
 
@@ -48,6 +49,6 @@ discordClient.on("interactionCreate", interactionCreateEvent);
 /** 起動時処理 **/
 discordClient.login(env.discordToken)
     .catch(error => {
-        console.error("Botログイン失敗", error);
+        logger.error("Botログイン失敗", error);
         process.exit(1);
     });

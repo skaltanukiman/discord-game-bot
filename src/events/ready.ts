@@ -11,17 +11,16 @@ import { logger } from "../util/logger.js";
  */
 export async function onReady(): Promise<TextChannel | null> {
     logger.info(`Logged in as ${discordClient.user?.tag}`);
-    // console.log(`Logged in as ${discordClient.user?.tag}`);
 
     const channel = await discordClient.channels.fetch(env.channelId);
 
     if (!channel) {
-        console.log("チャンネルが見つかりません");
+        logger.info("チャンネルが見つかりません");
         return null;
     }
 
     if (channel.type !== ChannelType.GuildText) {
-        console.log("テキストチャンネルではありません");
+        logger.info("テキストチャンネルではありません");
         return null;
     }
 
