@@ -1,6 +1,7 @@
 import winston, { transports } from "winston";
 import path from "path";
 import fs from "fs";
+import { formatInTimeZone } from "date-fns-tz";
 
 const logDir = path.resolve("logs/app");
 
@@ -13,7 +14,11 @@ export const logger = winston.createLogger({
     level: "info",
 
     format: winston.format.combine(
-        winston.format.timestamp(),
+        winston.format.timestamp({
+            format: () =>
+                formatInTimeZone(new Date(), "Asia/Tokyo", "yyyy-MM-dd HH:mm:ss")
+        }),
+        
         winston.format.printf(({ timestamp, level, message }) => {
             return `[${timestamp}] [${level}] ${message}`;
         })
