@@ -54,7 +54,7 @@ export const cronCycle: cronCycleType = {
 }
 
 export const testSettings: testSettingsType = {
-    testmode: true
+    testmode: false
 }
 
 export const mostPlayed: MostPlayedType = {

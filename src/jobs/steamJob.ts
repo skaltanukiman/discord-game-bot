@@ -26,20 +26,18 @@ export async function runGameRecommendationJob(channel: TextChannel) {
         return;
     }
 
-    if (testSettings.testmode) {
-        // const gameDetails: ExtendedSteamGameDetail[] = [];
+    // const gameDetails: ExtendedSteamGameDetail[] = [];
 
-        // 全件
-        // for (const val of filteredMap.values()) {
-        //     gameDetails.push(val);
-        // }
+    // 全件
+    // for (const val of filteredMap.values()) {
+    //     gameDetails.push(val);
+    // }
 
-        // ランダム（要素数指定）
-        const gameDetails: ExtendedSteamGameDetail[] = pickRandomvaluesFromMap(filteredMap, 15);
+    // ランダム（要素数指定）
+    const gameDetails: ExtendedSteamGameDetail[] = pickRandomvaluesFromMap(filteredMap, 15);
         
-        // filterMapよりDISCORDに送りたいものだけをgameDetailsに配列として格納し、[sendGameDetailsToChannel]を叩く
+    // filterMapよりDISCORDに送りたいものだけをgameDetailsに配列として格納し、[sendGameDetailsToChannel]を叩く
 
-        await sendGameDetailsToChannel(gameDetails, channel);
-    }
+    await sendGameDetailsToChannel(gameDetails, channel);
 
 }
