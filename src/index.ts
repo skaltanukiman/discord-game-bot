@@ -3,7 +3,6 @@ import { env } from "./config/env.js";
 import { onReady } from "./events/ready.js";
 import { runGameRecommendationJob } from "./jobs/steamJob.js";
 import { processControl, testSettings } from "./config/setting.js";
-import { Client, GatewayIntentBits, EmbedBuilder  } from "discord.js";
 import { interactionCreateEvent } from "./events/interactionCreate.js";
 import { startScheduler } from "./jobs/scheduler.js";
 import { discordClient } from "./clients/discordClient.js";
