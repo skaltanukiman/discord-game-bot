@@ -1,6 +1,6 @@
 import { ChannelType, TextChannel } from "discord.js";
 import { env } from "../config/env.js";
-import { discordClient } from "../index.js";
+import { discordClient } from "../clients/discordClient.js";
 
 /**
  * ログイン完了時に、指定されたテキストチャンネルを取得する

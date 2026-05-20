@@ -6,9 +6,7 @@ import { processControl, testSettings } from "./config/setting.js";
 import { Client, GatewayIntentBits, EmbedBuilder  } from "discord.js";
 import { interactionCreateEvent } from "./events/interactionCreate.js";
 import { startScheduler } from "./jobs/scheduler.js";
-
-/** 初期処理 **/
-export const discordClient = new Client({ intents: [GatewayIntentBits.Guilds] });
+import { discordClient } from "./clients/discordClient.js";
 
 /** イベント処理 **/
 
