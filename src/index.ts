@@ -37,8 +37,10 @@ discordClient.once("clientReady", async () => {
         // 起動時1回実行
         await runGameRecommendationJob(channel);
 
-        // 定期実行（スケジュール実行）
-        startScheduler(channel);
+        if (processControl.enable.recommendationCron) {
+            // 定期実行（スケジュール実行）
+            startScheduler(channel);
+        }
     }
 
 });

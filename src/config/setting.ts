@@ -36,6 +36,7 @@ type GeneralSettingType = {
 type ProcessControlType = {
     enable: {
         recommendationJob: boolean;
+        recommendationCron: boolean;
     };
 }
 
@@ -77,6 +78,7 @@ export const generalSetting: GeneralSettingType = {
 
 export const processControl: ProcessControlType = {
     enable: {
-        recommendationJob: false  // 起動時にゲーム紹介通知を走らせるか
+        recommendationJob: false,  // 起動時にゲーム紹介通知を走らせるか
+        recommendationCron: false  // 定期実行を行うか
     }
 }
