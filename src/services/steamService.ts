@@ -6,6 +6,7 @@ import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime, mostPlayed, concurrencyOptions } from "../config/setting.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, CurrentPlayersResponse, CurrentPlayersData } from "../services/steamTypeManager.js";
 import { fetchInBatches } from "../batch/apiBatches.js";
+import { logger } from "../util/logger.js";
 
 /**
  * Steamの同時接続数ランキング上位ゲームの詳細情報を取得する
@@ -28,7 +29,7 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     console.log(ranks);
 
     if (!ranks || ranks.length === 0) {
-        console.log("ランキングデータが取得できなかったため、nullを返却します。");
+        logger.info("ランキングデータが取得できなかったため、nullを返却します。");
         return null;
     }
 
@@ -42,7 +43,7 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
     // const detailData = await getDetailGameDatas(appids);
 
     if (!detailData || Object.keys(detailData).length === 0) {
-        console.log("詳細データが取得できなかったため、nullを返却します。");
+        logger.info("詳細データが取得できなかったため、nullを返却します。");
         return null;
     }
 
@@ -307,7 +308,7 @@ export async function getMostPlayedGames(offset: number = 0, limit: number = 0):
         }
     }
     catch (error) {
-        console.error("キャッシュ検証中にエラーが起きたため、キャッシュ処理をスキップ。APIよりデータを取得します。");
+        logger.error("キャッシュ検証中にエラーが起きたため、キャッシュ処理をスキップ。APIよりデータを取得します。", error);
     }
 
     try {
@@ -315,7 +316,7 @@ export async function getMostPlayedGames(offset: number = 0, limit: number = 0):
         const fetchTime = Date.now();
 
         if (!ranks || !Array.isArray(ranks)) {
-            console.error("ランキング取得失敗");
+            console.warn("ランキング取得失敗");
             initializeMostPlayedCache();
             return [];
         }
@@ -333,7 +334,7 @@ export async function getMostPlayedGames(offset: number = 0, limit: number = 0):
 
     }
     catch (error) {
-        console.error("Steam API 取得処理エラー", error);
+        logger.error("Steam API 取得処理エラー", error);
         initializeMostPlayedCache();
         return [];
     }
@@ -374,7 +375,7 @@ function isCacheValid(key: string) {
 function setNewCacheVal(offset: number, limit: number, key: string, fetchTime: number, data: any) {
 
     if (!mostPlayedCache) {
-        console.error(`${mostPlayedCache}が存在しません`);
+        logger.error(`${mostPlayedCache}が存在しません`);
         return;
     }
 

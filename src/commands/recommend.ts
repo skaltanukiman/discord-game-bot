@@ -3,6 +3,7 @@ import { runGameRecommendByRankJob } from "../jobs/commandJob.js";
 import { RecommendMode } from "./commandCommonVal.js";
 import { requestContext } from "../context/requestContext.js";
 import { GENERATION_LIMIT } from "../services/openaiService.js";
+import { logger } from "../util/logger.js";
 
 const commandStr = {
     recommend: {
@@ -71,7 +72,7 @@ export const recommendCommand = {
             await interaction.editReply("おすすめゲームを送信しました");
         }
         catch(error) {
-            console.error(`${recommendCommand}内でエラー発生`, error);
+            logger.error(`${recommendCommand}内でエラー発生`, error);
 
             if (interaction.deferred || interaction.replied) {
                 await interaction.editReply("コマンド処理中にエラーが発生しました");

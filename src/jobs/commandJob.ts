@@ -5,14 +5,15 @@ import { filterMultiplayerGames, pickRandomvaluesFromMap } from "../util/filteri
 import { testSettings } from "../config/setting.js";
 import { sendGameDetailsToChannel } from "../services/embedService.js"
 import { RecommendMode } from "../commands/commandCommonVal.js";
+import { logger } from "../util/logger.js";
 
 export async function runGameRecommendByRankJob(channel: TextChannel, count: number, mode: number) {
-    console.log(`count: ${count}, mode: ${mode}`);
+    logger.info(`count: ${count}, mode: ${mode}`);
 
     const steamDataMap = await getMostPlayedGameDetails();
 
     if (!steamDataMap || steamDataMap.size === 0) {
-        console.log("steamデータが空のため、処理をスキップします。");
+        logger.info("steamデータが空のため、処理をスキップします。");
         return;
     }
 
@@ -24,7 +25,7 @@ export async function runGameRecommendByRankJob(channel: TextChannel, count: num
     console.log(`削除後: ${filteredMap.size}`);
 
     if (filteredMap.size === 0) {
-        console.log("フィルター結果が空のため、処理をスキップします。");
+        logger.info("フィルター結果が空のため、処理をスキップします。");
         return;
     }
 
@@ -48,7 +49,7 @@ export async function runGameRecommendByRankJob(channel: TextChannel, count: num
     }
 
     if (gameDetails.length === 0) {
-        console.log("抽出結果が空のため、処理をスキップします。");
+        logger.info("抽出結果が空のため、処理をスキップします。");
         return;
     }
 

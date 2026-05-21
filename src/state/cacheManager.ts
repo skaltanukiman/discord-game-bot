@@ -1,5 +1,6 @@
 import { CurrentPlayersData, SteamAppDetailsResponse } from "../services/steamTypeManager.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
+import { logger } from "../util/logger.js";
 
 //#region 型定義
 
@@ -92,7 +93,7 @@ export function hasValidCache<T>(cache: CacheType<T>, appid: number, limitMinute
         return isWithinMinutes(preFetchTime, limitMinutes);
     }
     catch(error) {
-        console.error(`キャッシュの取得に失敗しました。[${cache}]`, error);
+        logger.error(`キャッシュの取得に失敗しました。[${cache}]`, error);
         return false;
     }
 }
@@ -127,7 +128,7 @@ export function setCacheData<T>(cache: CacheType<Record<string, T>>, appid: numb
     cache.appidWithFetchTime.set(appid, Date.now());
 
     if (data[appidStr] == null) {
-        console.error(`キャッシュ値をセットできませんでした。[ID: ${appid}]`);
+        logger.error(`キャッシュ値をセットできませんでした。[ID: ${appid}]`);
         return;
     }
     cache.data[appidStr] = data[appidStr];
