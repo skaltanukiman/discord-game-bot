@@ -44,7 +44,7 @@ Steam API を利用してゲーム情報を取得し、OpenAI による紹介文
 
 ## 動作確認環境
 
-- Ubuntu Ubuntu 22.04.5 LTS
+- Ubuntu 22.04.5 LTS
 - Node.js v22.22.2
 - npm 10.9.7
 
