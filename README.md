@@ -81,6 +81,8 @@ CHANNEL_ID=xxxxxxxx           # 投稿先DiscordチャンネルID
 
 ## コンパイル設定
 
+#### `tsconfig.json [compilerOptions]`
+
 ```json
 {
   "compilerOptions": {
@@ -92,8 +94,7 @@ CHANNEL_ID=xxxxxxxx           # 投稿先DiscordチャンネルID
   }
 }
 ```
-
-## package.json scripts
+#### `package.json [scripts]`
 
 ```json
 {
@@ -105,6 +106,8 @@ CHANNEL_ID=xxxxxxxx           # 投稿先DiscordチャンネルID
   }
 }
 ```
+
+---
 
 | コマンド | 内容 |
 |---|---|
