@@ -166,6 +166,9 @@ pm2 stop discord-game-bot
 
 Discord Developer Portal で Bot を作成し、以下権限を付与してください。
 
+Discord Developer Portal<br>
+https://discord.com/developers/applications
+
 ### Bot Permissions
 
 - Send Messages
