@@ -29,6 +29,7 @@ Steam API を利用してゲーム情報を取得し、OpenAI による紹介文
 - dotenv
 - winston
 - PM2
+- GitHub Actions
 
 ---
 
@@ -218,6 +219,28 @@ logger.info("Bot起動完了");
 logger.warn("Steam API取得失敗");
 logger.error("Discord送信失敗", error);
 ```
+
+---
+
+## CI/CD
+
+GitHub Actions を利用して、Pull Request 作成時にテスト・ビルドを自動実行しています。
+
+また、main ブランチへマージされた際には VPS へ自動デプロイし、PM2 で Bot を再起動する構成にしています。
+
+```txt
+Pull Request
+↓
+test / build
+
+main merge
+↓
+VPS deploy
+↓
+PM2 restart
+```
+
+---
 
 ## ライセンス
 
