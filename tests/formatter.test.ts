@@ -1,5 +1,6 @@
 import { describe, it, expect} from "vitest";
 import { formatGenres, formatCategories } from "../src/formatter/steamDataFormatter.js";
+import { removeHtmlTag } from "../src/formatter/textFormatter.js";
 
 /**
  * formatGenres のテスト
@@ -66,5 +67,49 @@ describe("formatCategories", () => {
         const result = formatCategories(game);
 
         expect(result).toBeUndefined();
+    });
+});
+
+/**
+ * removeHtmlTag のテスト
+ *
+ * 渡された文字列に含まれているHTMLタグを削除し、
+ * 文字列として返す
+ */
+describe("removeHtmlTag", () => {
+    it("HTMLタグを除去できる", () => {
+        const result = removeHtmlTag("<strong>日本語</strong>");
+
+        expect(result).toBe("日本語");
+    });
+
+    it("brタグを除去できる", () => {
+        const result = removeHtmlTag("日本語<br>対応");
+
+        expect(result).toBe("日本語対応");
+    });
+
+    it("複数のHTMLタグを除去できる", () => {
+        const result = removeHtmlTag("<p>Hello</p><strong>World</strong>");
+
+        expect(result).toBe("HelloWorld");
+    });
+
+    it("属性付きHTMLタグを除去できる", () => {
+        const result = removeHtmlTag('<span class="red">Action</span>');
+
+        expect(result).toBe("Action");
+    });
+
+    it("HTMLタグが含まれていない場合はそのまま返す", () => {
+        const result = removeHtmlTag("日本語対応");
+
+        expect(result).toBe("日本語対応");
+    });
+
+    it("空文字の場合は空文字を返す", () => {
+        const result = removeHtmlTag("");
+
+        expect(result).toBe("");
     });
 });
