@@ -35,6 +35,17 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              source "$NVM_DIR/nvm.sh"
+            fi
+
+            nvm use 22
+
+            node -v
+            npm -v
+            pm2 -v
+
             cd ~/apps/discord-game-bot
             git pull origin main
             npm ci
