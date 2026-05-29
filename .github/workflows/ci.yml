@@ -6,9 +6,11 @@ on:
       - main
       - "feature/**"
   pull_request:
+    branches:
+      - main
 
 jobs:
-  test-and-build:
+  test-build:
     runs-on: ubuntu-latest
 
     steps:
