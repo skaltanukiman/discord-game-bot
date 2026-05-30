@@ -4,9 +4,10 @@ import { mostPlayedCache, initializeMostPlayedCache, currentDataCache, hasValidC
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime, mostPlayed, concurrencyOptions } from "../config/setting.js";
-import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, CurrentPlayersResponse, CurrentPlayersData } from "../services/steamTypeManager.js";
+import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, CurrentPlayersResponse, CurrentPlayersData, IStoreServiceGetAppListResponse, SteamStoreApp } from "../services/steamTypeManager.js";
 import { fetchInBatches } from "../batch/apiBatches.js";
 import { logger } from "../util/logger.js";
+import { setTimeout as wait } from "timers/promises";
 
 /**
  * Steamの同時接続数ランキング上位ゲームの詳細情報を取得する
@@ -385,3 +386,112 @@ function setNewCacheVal(offset: number, limit: number, key: string, fetchTime: n
     mostPlayedCache.key = key;
     mostPlayedCache.data = data;
 }
+
+type SteamAppListOptions = {
+    includeGames?: boolean;
+    includeDlc?: boolean;
+    includeSoftware?: boolean;
+    includeVideos?: boolean;
+    includeHardware?: boolean;
+    maxResults?: number;
+};
+
+/**
+ * Steam Store のアプリ一覧を1ページ分取得する
+ * 
+ * IStoreService/GetAppList APIを呼び出し、指定された条件に一致するアプリ一覧を取得する。
+ * lastAppId が指定されている場合は、そのAppID以降のページを取得する。
+ * 
+ * @param lastAppId 前回取得した最後のAppID。次ページ取得時に指定する
+ * @param options 取得対象の種別や最大取得件数などのオプション
+ * @returns Steam Store アプリ一覧APIのレスポンス
+ */
+async function fetchSteamStoreAppListPage(lastAppId?: number, options: SteamAppListOptions = {}): Promise<IStoreServiceGetAppListResponse> {
+    const STEAM_STORE_APP_LIST_URL = "https://api.steampowered.com/IStoreService/GetAppList/v1/";
+
+    // optionsが引数で指定されている場合、指定されたパラメタのみ上書き（指定されていないパラメタはデフォルト値が使われる）
+    const {
+        includeGames = true,
+        includeDlc = false,
+        includeSoftware = false,
+        includeVideos = false,
+        includeHardware = false,
+        maxResults = 50000
+    } = options;
+
+    try {
+        const response = await axios.get<IStoreServiceGetAppListResponse>(
+            STEAM_STORE_APP_LIST_URL,
+            {
+                params: {
+                    key: env.steamApiKey,
+                    include_games: includeGames,
+                    include_dlc: includeDlc,
+                    include_software: includeSoftware,
+                    include_videos: includeVideos,
+                    include_hardware: includeHardware,
+                    max_results: maxResults,
+                    ...(lastAppId != null && { last_appid: lastAppId })
+                }
+            }
+        );
+
+        return response.data;
+    }
+    catch (error) {
+        logger.error("Steamゲーム一覧取得APIエラー", error);
+        throw error;
+    }
+}
+
+/**
+ * Steam Store のアプリ一覧を全件取得する
+ * 
+ * IStoreService/GetAppList APIはページング形式のため、
+ * have_more_results が true の間、last_appid を指定して繰り返し取得する。
+ * 
+ * @param options 取得対象の種別や最大取得件数などのオプション
+ * @returns 指定条件に一致するSteam Storeアプリ一覧
+ */
+async function fetchAllSteamStoreApps(options: SteamAppListOptions = {}): Promise<SteamStoreApp[]> {
+    const apps: SteamStoreApp[] = [];
+    let lastAppId: number | undefined = undefined;
+
+    while (true) {
+        const page = await fetchSteamStoreAppListPage(lastAppId, options);
+
+        apps.push(...(page.response.apps ?? []));
+
+        if (page.response.have_more_results !== true || page.response.last_appid == null) {
+            // 次のページが存在しない場合はブレイクする（ループを抜ける）
+            break;
+        }
+
+        lastAppId = page.response.last_appid;
+
+        // Steam APIへ連続アクセスしすぎないように少し待機
+        await wait(500);
+    }
+
+    return apps;
+}
+
+/**
+ * Steam Store に登録されているゲーム一覧を全件取得する
+ * 
+ * DLC、ソフトウェア、動画、ハードウェアは除外し、
+ * ゲームとして扱われるSteamアプリのみを取得する。
+ * 
+ * @returns Steam Store上のゲーム一覧
+ */
+export async function fetchAllSteamGames(): Promise<SteamStoreApp[]> {
+    return await fetchAllSteamStoreApps({
+        includeGames: true,
+        includeDlc: false,
+        includeSoftware: false,
+        includeVideos: false,
+        includeHardware: false,
+        maxResults: 50000
+    });
+}
+
