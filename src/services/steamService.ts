@@ -162,7 +162,7 @@ async function fetchCurrentConnectionData(appid: number): Promise<CurrentPlayers
     catch (error) {
         console.error("同時接続Steam API処理エラー", `appid: ${appid}`, error);
 
-        // player_countはundefind
+        // player_countはundefined
         const data: CurrentPlayersResponse = {response:{result: STEAM_API_ERROR}};
         return data;
     }
