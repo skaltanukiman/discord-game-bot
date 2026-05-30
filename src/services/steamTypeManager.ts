@@ -62,4 +62,19 @@ export type ExtendedSteamGameDetail = {
     steamDetail: SteamAppDetailsResponse[string]["data"];
     mostplayed: MostPlayedGame;
     currentPlayers?: CurrentPlayersData[string]["data"];
-}
+};
+
+export type SteamStoreApp = {
+    appid: number;
+    name: string;
+    last_modified?: number;
+    price_change_number?: number;
+};
+
+export type IStoreServiceGetAppListResponse = {
+    response: {
+        apps?: SteamStoreApp[];
+        have_more_results?: boolean;
+        last_appid?: number;
+    };
+};
