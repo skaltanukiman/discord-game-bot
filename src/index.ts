@@ -7,6 +7,8 @@ import { interactionCreateEvent } from "./events/interactionCreate.js";
 import { startScheduler } from "./jobs/scheduler.js";
 import { discordClient } from "./clients/discordClient.js";
 import { logger } from "./util/logger.js";
+import { fetchAllSteamGames } from "./services/steamService.js";
+import { SteamStoreApp } from "./services/steamTypeManager.js";
 
 /** イベント処理 **/
 
@@ -22,14 +24,18 @@ discordClient.once("clientReady", async () => {
     }
 
     // テスト用
-    // if (testSettings.testmode) {
-    //     const embeds: EmbedBuilder[] = [];
+    if (testSettings.testmode) {
+        const storeInfo: SteamStoreApp[] = await fetchAllSteamGames();
+        console.log("★処理完了★");
+        console.log(`長さ: ${storeInfo.length}`);
+        console.log(`appid: ${storeInfo[2000]?.appid}`);
+        console.log(`last_modified: ${storeInfo[2000]?.last_modified}`);
+        console.log(`name: ${storeInfo[2000]?.name}`);
+        console.log(`price_change_number: ${storeInfo[2000]?.price_change_number}`);
 
-    //     await channel.send({ embeds: embeds });
-
-    //     console.log("テストモードのため処理を終了します");
-    //     process.exit(0);
-    // }
+        console.log("テストモードのため処理を終了します");
+        process.exit(0);
+    }
 
     if (processControl.enable.recommendationJob) {
         // 起動時1回実行

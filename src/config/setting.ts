@@ -40,6 +40,10 @@ type ProcessControlType = {
     };
 }
 
+type ProcessWaitTimeType = {
+    fetchAllSteamStoreApps: number;
+}
+
 //#endregion
 
 export const cacheTime: cacheTimeType = {
@@ -81,4 +85,8 @@ export const processControl: ProcessControlType = {
         recommendationJob: false,  // 起動時にゲーム紹介通知を走らせるか
         recommendationCron: false  // 定期実行を行うか
     }
+}
+
+export const processWaitTime: ProcessWaitTimeType = {
+    fetchAllSteamStoreApps: 500
 }

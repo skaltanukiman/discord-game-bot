@@ -3,7 +3,7 @@ import { env } from "../config/env.js";
 import { mostPlayedCache, initializeMostPlayedCache, currentDataCache, hasValidCache, detailDataCache, getCacheData, setCacheData } from "../state/cacheManager.js";
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
-import { cacheTime, mostPlayed, concurrencyOptions } from "../config/setting.js";
+import { cacheTime, mostPlayed, concurrencyOptions, processWaitTime } from "../config/setting.js";
 import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, CurrentPlayersResponse, CurrentPlayersData, IStoreServiceGetAppListResponse, SteamStoreApp } from "../services/steamTypeManager.js";
 import { fetchInBatches } from "../batch/apiBatches.js";
 import { logger } from "../util/logger.js";
@@ -470,7 +470,9 @@ async function fetchAllSteamStoreApps(options: SteamAppListOptions = {}): Promis
         lastAppId = page.response.last_appid;
 
         // Steam APIへ連続アクセスしすぎないように少し待機
-        await wait(500);
+        console.log("★☆待機開始☆★");
+        await wait(processWaitTime.fetchAllSteamStoreApps);
+        console.log("★☆待機終了☆★");
     }
 
     return apps;
