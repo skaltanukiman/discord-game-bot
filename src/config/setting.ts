@@ -4,6 +4,7 @@ type cacheTimeType = {
     mostPlayed: number;
     detailData: number;
     currentPlayer: number;
+    steamStoreAppList: number;
 }
 
 type cronCycleType = {
@@ -49,7 +50,8 @@ type ProcessWaitTimeType = {
 export const cacheTime: cacheTimeType = {
     mostPlayed: 10,    // 分
     detailData: 1440,  // 分（1440:一日）
-    currentPlayer: 60
+    currentPlayer: 60,
+    steamStoreAppList: 1000 * 60 * 60 * 24 // 24時間
 }
 
 export const cronCycle: cronCycleType = {

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { env } from "../config/env.js";
-import { mostPlayedCache, initializeMostPlayedCache, currentDataCache, hasValidCache, detailDataCache, getCacheData, setCacheData } from "../state/cacheManager.js";
+import { mostPlayedCache, initializeMostPlayedCache, currentDataCache, hasValidCache, detailDataCache, getCacheData, setCacheData, getCachedAllSteamGames, saveSteamStoreCache, STEAM_STORE_CACHE_FILE_PATHS } from "../state/cacheManager.js";
 import { createKey } from "../util/createKeys.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { cacheTime, mostPlayed, concurrencyOptions, processWaitTime } from "../config/setting.js";
@@ -439,7 +439,7 @@ async function fetchSteamStoreAppListPage(lastAppId?: number, options: SteamAppL
         return response.data;
     }
     catch (error) {
-        logger.error("Steamゲーム一覧取得APIエラー", error);
+        logger.error("Steamストア情報一覧取得APIエラー", error);
         throw error;
     }
 }
@@ -470,9 +470,7 @@ async function fetchAllSteamStoreApps(options: SteamAppListOptions = {}): Promis
         lastAppId = page.response.last_appid;
 
         // Steam APIへ連続アクセスしすぎないように少し待機
-        console.log("★☆待機開始☆★");
         await wait(processWaitTime.fetchAllSteamStoreApps);
-        console.log("★☆待機終了☆★");
     }
 
     return apps;
@@ -486,7 +484,7 @@ async function fetchAllSteamStoreApps(options: SteamAppListOptions = {}): Promis
  * 
  * @returns Steam Store上のゲーム一覧
  */
-export async function fetchAllSteamGames(): Promise<SteamStoreApp[]> {
+async function fetchAllSteamGames(): Promise<SteamStoreApp[]> {
     return await fetchAllSteamStoreApps({
         includeGames: true,
         includeDlc: false,
@@ -497,3 +495,45 @@ export async function fetchAllSteamGames(): Promise<SteamStoreApp[]> {
     });
 }
 
+/**
+ * Steam Store のゲーム一覧を取得する
+ * 
+ * 有効なキャッシュがある場合はキャッシュを返し、
+ * 有効なキャッシュがない場合はSteam APIから取得してキャッシュに保存する。
+ * キャッシュの読込・保存に失敗した場合でも処理は継続する。
+ * 
+ * @returns Steam Store上のゲーム一覧。API取得失敗時は空配列
+ */
+export async function getAllSteamGames(): Promise<SteamStoreApp[]> {
+    try {
+        try {
+            const cache = await getCachedAllSteamGames();
+
+            if (cache.length > 0) {
+                // キャッシュが取得出来た場合は、キャッシュから取得したデータを返す
+                console.log("キャッシュからデータを取得します。");
+                return cache;
+            }
+        }
+        catch (error) {
+            logger.error("Steamゲーム一覧キャッシュ読込エラー", error);
+        }
+
+        // 有効なキャッシュがない場合は、APIから取得する
+        console.log("APIからデータを取得します。");
+        const storeInfo = await fetchAllSteamGames();
+
+        try {
+            await saveSteamStoreCache(STEAM_STORE_CACHE_FILE_PATHS.STEAM_GAMES, storeInfo);
+        }
+        catch (error) {
+            logger.error("Steamゲーム一覧キャッシュ保存エラー", error);
+        }
+
+        return storeInfo;
+    }
+    catch (error) {
+        logger.error("Steamゲーム一覧取得処理エラー", error);
+        return [];
+    }
+}

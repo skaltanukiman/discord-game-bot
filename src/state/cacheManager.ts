@@ -1,6 +1,16 @@
-import { CurrentPlayersData, SteamAppDetailsResponse } from "../services/steamTypeManager.js";
+import { CurrentPlayersData, SteamAppDetailsResponse, SteamStoreApp } from "../services/steamTypeManager.js";
 import { isWithinMinutes } from "../util/timeUtil.js";
 import { logger } from "../util/logger.js";
+import fs from "fs/promises";
+import path from "path";
+import { encodingString } from "../resource/encoding.js";
+import { cacheTime } from "../config/setting.js";
+
+const CACHE_DIR = path.resolve("cache");
+
+export const STEAM_STORE_CACHE_FILE_PATHS = {
+    STEAM_GAMES: path.join(CACHE_DIR, "steam-games.json")
+} as const;
 
 //#region 型定義
 
@@ -20,6 +30,11 @@ type CacheType<T> = {
 type DetailDataCacheType = CacheType<SteamAppDetailsResponse>;
 
 type CurrentDataCacheType = CacheType<CurrentPlayersData>;
+
+type SteamStoreAppCacheFile = {
+    cachedAt: number;
+    data: SteamStoreApp[];
+};
 
 //#endregion
 
@@ -132,4 +147,72 @@ export function setCacheData<T>(cache: CacheType<Record<string, T>>, appid: numb
         return;
     }
     cache.data[appidStr] = data[appidStr];
+}
+
+/**
+ * Steam Store アプリ一覧のキャッシュをJSONファイルへ保存する
+ * 
+ * 現在時刻を cachedAt として付与し、指定されたファイルパスへ
+ * Steam Storeアプリ一覧データを書き込む。
+ * 保存先フォルダが存在しない場合は作成する。
+ * 
+ * @param filepath キャッシュを書き込むファイルパス
+ * @param data キャッシュとして保存するSteam Storeアプリ一覧
+ */
+export async function saveSteamStoreCache(filepath:string, data: SteamStoreApp[]): Promise<void> {
+    const cacheData: SteamStoreAppCacheFile = {
+        cachedAt: Date.now(),
+        data
+    };
+
+    // フォルダがなければ作成
+    await fs.mkdir(CACHE_DIR, { recursive: true });
+
+    logger.info(`${path.basename(filepath)}: 書き込み`);
+    await fs.writeFile(filepath, JSON.stringify(cacheData, null, 2), encodingString.utf_8);
+}
+
+/**
+ * Steam Store アプリ一覧のキャッシュをJSONファイルから読み込む
+ * 
+ * 指定されたファイルパスからキャッシュデータを読み込み、
+ * JSONを SteamStoreAppCacheFile として返す。
+ * ファイルが存在しない場合やJSONが壊れている場合は null を返す。
+ * 
+ * @param filepath キャッシュを読み込むファイルパス
+ * @returns 読み込んだキャッシュデータ。取得できない場合は null
+ */
+async function loadSteamStoreCache(filepath:string): Promise<SteamStoreAppCacheFile | null> {
+    try {
+        logger.info(`${path.basename(filepath)}: 読み込み`);
+        const json = await fs.readFile(filepath, encodingString.utf_8);
+
+        return JSON.parse(json) as SteamStoreAppCacheFile;
+    }
+    catch (error) {
+        logger.warn(`${path.basename(filepath)} のファイルが存在しないか壊れています`);
+        return null;
+    }
+}
+
+/**
+ * Steam Store のゲーム一覧キャッシュを取得する
+ * 
+ * キャッシュファイルを読み込み、保存時刻が設定された有効期限内であれば
+ * キャッシュ内のSteam Storeゲーム一覧を返す。
+ * キャッシュが存在しない、破損している、または有効期限切れの場合は空配列を返す。
+ * 
+ * @returns 有効なSteam Storeゲーム一覧キャッシュ。取得できない場合は空配列
+ */
+export async function getCachedAllSteamGames(): Promise<SteamStoreApp[]> {
+    const cache = await loadSteamStoreCache(STEAM_STORE_CACHE_FILE_PATHS.STEAM_GAMES);
+    const now = Date.now();
+
+    if (cache && now - cache.cachedAt < cacheTime.steamStoreAppList) {
+        // キャッシュデータが対象パスに存在し、キャッシュ保存時間が設定された時間内だったらキャッシュデータを返す
+        return cache.data;
+    }
+
+    // キャッシュが取得できなかった場合は空配列を返す
+    return [];    
 }
