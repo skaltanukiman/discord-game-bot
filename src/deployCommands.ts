@@ -3,10 +3,12 @@ import { env } from "./config/env.js";
 import { REST, Routes } from "discord.js";
 import { pingCommand } from "./commands/ping.js";
 import { recommendCommand } from "./commands/recommend.js";
+import { gameSearchCommand } from "./commands/search.js";
 
 const commands = [
         pingCommand.data.toJSON(),
-        recommendCommand.data.toJSON()
+        recommendCommand.data.toJSON(),
+        gameSearchCommand.data.toJSON()
     ];
 
 const rest = new REST({ version: "10" }).setToken(env.discordToken);

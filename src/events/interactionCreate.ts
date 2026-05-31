@@ -10,7 +10,14 @@ export async function interactionCreateEvent(interaction: Interaction) {
         const command = commands.get(interaction.commandName);
 
         if (!command) {
-            logger.error("コマンドが取得できませんでした。");
+            logger.error(`コマンドが取得できませんでした: ${interaction.commandName}`);
+
+            await interaction.reply({
+                content: "このコマンドは現在使用できません。",
+                ephemeral: true
+            });
+
+            return;
         }
 
         await command.execute(interaction);
