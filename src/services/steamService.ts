@@ -493,7 +493,7 @@ export async function getAllSteamGames(): Promise<SteamStoreApp[]> {
 
             if (cache.length > 0) {
                 // キャッシュが取得出来た場合は、キャッシュから取得したデータを返す
-                console.log("キャッシュからデータを取得します。");
+                logger.info("getAllSteamGames: キャッシュからデータを取得します。");
                 return cache;
             }
         }
@@ -502,7 +502,7 @@ export async function getAllSteamGames(): Promise<SteamStoreApp[]> {
         }
 
         // 有効なキャッシュがない場合は、APIから取得する
-        console.log("APIからデータを取得します。");
+        logger.info("getAllSteamGames: APIからデータを取得します。");
         const storeInfo = await fetchAllSteamGames();
 
         try {

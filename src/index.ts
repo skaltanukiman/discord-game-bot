@@ -24,18 +24,18 @@ discordClient.once("clientReady", async () => {
     }
 
     // テスト用
-    if (testSettings.testmode) {
-        const storeInfo: SteamStoreApp[] = await getAllSteamGames();
-        console.log("★処理完了★");
-        console.log(`長さ: ${storeInfo.length}`);
-        // console.log(`appid: ${storeInfo[2000]?.appid}`);
-        // console.log(`last_modified: ${storeInfo[2000]?.last_modified}`);
-        // console.log(`name: ${storeInfo[2000]?.name}`);
-        // console.log(`price_change_number: ${storeInfo[2000]?.price_change_number}`);
+    // if (testSettings.testmode) {
+    //     const storeInfo: SteamStoreApp[] = await getAllSteamGames();
+    //     console.log("★処理完了★");
+    //     console.log(`長さ: ${storeInfo.length}`);
+    //     // console.log(`appid: ${storeInfo[2000]?.appid}`);
+    //     // console.log(`last_modified: ${storeInfo[2000]?.last_modified}`);
+    //     // console.log(`name: ${storeInfo[2000]?.name}`);
+    //     // console.log(`price_change_number: ${storeInfo[2000]?.price_change_number}`);
 
-        console.log("テストモードのため処理を終了します");
-        process.exit(0);
-    }
+    //     console.log("テストモードのため処理を終了します");
+    //     process.exit(0);
+    // }
 
     if (processControl.enable.recommendationJob) {
         // 起動時1回実行
