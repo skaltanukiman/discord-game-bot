@@ -4,6 +4,7 @@ dist/
 *.log
 .vscode/
 *.tsbuildinfo
+cache/
 
 # OS files
 .DS_Store
