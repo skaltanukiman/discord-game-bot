@@ -8,6 +8,7 @@ import { SteamAppDetailsResponse, MostPlayedGame, ExtendedSteamGameDetail, Curre
 import { fetchInBatches } from "../batch/apiBatches.js";
 import { logger } from "../util/logger.js";
 import { setTimeout as wait } from "timers/promises";
+import { fetchAllSteamGames } from "./steamApiService.js";
 
 /**
  * Steamの同時接続数ランキング上位ゲームの詳細情報を取得する
@@ -453,7 +454,7 @@ async function fetchSteamStoreAppListPage(lastAppId?: number, options: SteamAppL
  * @param options 取得対象の種別や最大取得件数などのオプション
  * @returns 指定条件に一致するSteam Storeアプリ一覧
  */
-async function fetchAllSteamStoreApps(options: SteamAppListOptions = {}): Promise<SteamStoreApp[]> {
+export async function fetchAllSteamStoreApps(options: SteamAppListOptions = {}): Promise<SteamStoreApp[]> {
     const apps: SteamStoreApp[] = [];
     let lastAppId: number | undefined = undefined;
 
@@ -484,16 +485,16 @@ async function fetchAllSteamStoreApps(options: SteamAppListOptions = {}): Promis
  * 
  * @returns Steam Store上のゲーム一覧
  */
-async function fetchAllSteamGames(): Promise<SteamStoreApp[]> {
-    return await fetchAllSteamStoreApps({
-        includeGames: true,
-        includeDlc: false,
-        includeSoftware: false,
-        includeVideos: false,
-        includeHardware: false,
-        maxResults: 50000
-    });
-}
+// export async function fetchAllSteamGames(): Promise<SteamStoreApp[]> {
+//     return await fetchAllSteamStoreApps({
+//         includeGames: true,
+//         includeDlc: false,
+//         includeSoftware: false,
+//         includeVideos: false,
+//         includeHardware: false,
+//         maxResults: 50000
+//     });
+// }
 
 /**
  * Steam Store のゲーム一覧を取得する

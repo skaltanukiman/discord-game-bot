@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
 
-import { fetchAllSteamGames } from "../src/services/steamService";
+import { fetchAllSteamGames } from "../src/services/steamApiService";
 import { setTimeout as wait } from "timers/promises";
 import { logger } from "../src/util/logger";
 
@@ -245,7 +245,7 @@ describe("fetchAllSteamGames", () => {
         await expect(fetchAllSteamGames()).rejects.toThrow("Steam API Error");
 
         expect(logger.error).toHaveBeenCalledWith(
-            "Steamゲーム一覧取得APIエラー",
+            "Steamストア情報一覧取得APIエラー",
             error
         );
     });
