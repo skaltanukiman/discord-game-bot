@@ -519,3 +519,30 @@ export async function getAllSteamGames(): Promise<SteamStoreApp[]> {
         return [];
     }
 }
+
+/**
+ * Steamゲーム詳細データに現在プレイヤー数データを紐づけ、
+ * ExtendedSteamGameDetail の配列として返す。
+ *
+ * 取得に成功したSteam詳細データのみを対象とし、
+ * 現在プレイヤー数が取得できた場合のみ currentPlayers を設定する。
+ *
+ * @param steamDetails Steamゲーム詳細データ
+ * @param currentPlayersData 現在プレイヤー数データ
+ * @returns 結合後のゲーム詳細配列
+ */
+export function mergeSteamDetailsWithCurrentPlayers(steamDetails: SteamAppDetailsResponse, currentPlayersData: CurrentPlayersData): ExtendedSteamGameDetail[] {
+    if (Object.keys(steamDetails).length === 0) {
+        return [];
+    }
+
+    return Object.entries(steamDetails).filter(([, value]) => value.success)
+                                       .map(([appid, value]) => {
+                                            const currentPlayers = currentPlayersData[appid]?.data;
+
+                                            return {
+                                                steamDetail: value.data,
+                                                ...(currentPlayers !== undefined && { currentPlayers })
+                                            };
+                                       });
+}

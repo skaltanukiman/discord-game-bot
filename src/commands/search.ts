@@ -1,10 +1,15 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import { logger } from "../util/logger.js";
-import { fetchCurrentPlayerCounts, getAllSteamGames, getDetailGameDatas } from "../services/steamService.js";
+import { fetchCurrentPlayerCounts, getAllSteamGames, getDetailGameDatas, mergeSteamDetailsWithCurrentPlayers } from "../services/steamService.js";
 import { searchSteamApps } from "../services/steamSearchService.js";
+import { getTextChannel } from "../clients/channel.js";
+import { sendGameDetailsToChannel } from "../services/embedService.js";
+import { GENERATION_LIMIT } from "../services/openaiService.js";
+import { requestContext } from "../context/requestContext.js";
 
 const GAME_SEARCH_COMMAND_NAME = {
-    KEYWORD: "keyword"
+    KEYWORD: "keyword",
+    USEOPENAI: "use_openai"
 } as const;
 
 export const gameSearchCommand = {
@@ -18,6 +23,12 @@ export const gameSearchCommand = {
                   .setDescription("検索するゲーム名")
                   .setRequired(true)
 
+        )
+
+        .addBooleanOption(option =>
+            option.setName(GAME_SEARCH_COMMAND_NAME.USEOPENAI)
+                  .setDescription(`OpenAIで説明文を生成する（一回のリクエストにつき最大連続${GENERATION_LIMIT}件まで）`)
+                  .setRequired(false)
         ),
 
     execute: async (interaction: ChatInputCommandInteraction) => {
@@ -42,22 +53,47 @@ export const gameSearchCommand = {
                 return;
             }
 
-            // 以降、検索結果ありの場合の処理を記載する
-
             const slicedResults = searchResults.slice(0, LIMIT);
 
-            await interaction.followUp({
-                content: `検索結果が ${searchResults.length} 件あるから ${slicedResults.length} 件まで検索結果を切り捨てるよ～`,
-                ephemeral: true
-            });
+            if (searchResults.length > LIMIT) {
+                await interaction.followUp({
+                    content: `検索結果が ${searchResults.length} 件あるから ${slicedResults.length} 件まで検索結果を切り捨てるよ～`,
+                    ephemeral: true
+                });
+            }
 
             const appids: number[] = slicedResults.map(x => x.appid);
+
+            // ここより下の部分をラップできるのであればラップする
 
             const [detailData, currentPlayer] = await Promise.all([
                 getDetailGameDatas(appids),
                 fetchCurrentPlayerCounts(appids)
             ]);
 
+            const gameDetails = mergeSteamDetailsWithCurrentPlayers(detailData, currentPlayer);
+
+            const channel = await getTextChannel();
+
+            if (!channel) {
+                logger.warn("チャンネルが取得出来なかったため処理を中断します");
+
+                await interaction.editReply({
+                    content: "チャンネルが取得出来なかったため処理を中断します"
+                });
+                return;
+            }
+
+            requestContext.run(
+                {
+                    useOpenAI: interaction.options.getBoolean(GAME_SEARCH_COMMAND_NAME.USEOPENAI) ?? false,
+                    generateCount: 0
+                },
+                async () => {
+                    await sendGameDetailsToChannel(gameDetails, channel);
+                }
+            );
+            
             await interaction.editReply("ゲームの検索終了！");
 
         }

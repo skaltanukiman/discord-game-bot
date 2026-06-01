@@ -19,7 +19,7 @@ discordClient.once("clientReady", async () => {
     const channel = await onReady();
 
     if (!channel) {
-        logger.warn("チャンネル取得失敗のため終了します");
+        logger.warn("チャンネルが取得出来なかったためプロセスを終了します");
         process.exit(0);
     }
 

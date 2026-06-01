@@ -33,7 +33,7 @@ export async function runGameRecommendByRankJob(channel: TextChannel, count: num
     if (mode === RecommendMode.Rank) {
 
         const sorted = [...filteredMap.values()]
-            .sort((a, b) => a.mostplayed.rank - b.mostplayed.rank)
+            .sort((a, b) => a.mostplayed!.rank - b.mostplayed!.rank)
             .slice(0, count);
 
             gameDetails.push(...sorted);
