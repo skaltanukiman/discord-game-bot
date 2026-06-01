@@ -2,7 +2,6 @@ import { TextChannel } from "discord.js";
 import { getMostPlayedGameDetails } from "../services/steamService.js";
 import { ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 import { filterMultiplayerGames, pickRandomvaluesFromMap } from "../util/filtering.js";
-import { testSettings } from "../config/setting.js";
 import { sendGameDetailsToChannel } from "../services/embedService.js";
 import { logger } from "../util/logger.js";
 

@@ -23,9 +23,7 @@ export async function sendGameDetailsToChannel(gameDetails:ExtendedSteamGameDeta
             await channel.send({ embeds: [embed], components: [buttons] });
         }
         
-        // console.log("今から時を止めます");
         await setTimeout(1000);
-        // console.log("動きました");
     }
     
 }
