@@ -22,14 +22,18 @@ export const gameSearchCommand = {
 
     execute: async (interaction: ChatInputCommandInteraction) => {
 
+        const LIMIT : number = 10;
+
         try {
             await interaction.deferReply();
+
+            await interaction.editReply("検索中～～～");
 
             const keyword = interaction.options.getString(GAME_SEARCH_COMMAND_NAME.KEYWORD, true);
 
             const apps = await getAllSteamGames();
 
-            const searchResults = searchSteamApps(apps, keyword, 10);
+            const searchResults = searchSteamApps(apps, keyword, 0);
 
             if (searchResults.length === 0) {
                 await interaction.editReply({
@@ -40,9 +44,14 @@ export const gameSearchCommand = {
 
             // 以降、検索結果ありの場合の処理を記載する
 
-            console.log(`検索結果（長さ）: ${searchResults.length}`);
+            const slicedResults = searchResults.slice(0, LIMIT);
 
-            await interaction.editReply("ゲームの検索終了");
+            await interaction.followUp({
+                content: `検索結果が ${searchResults.length} 件あるから ${slicedResults.length} 件まで検索結果を切り捨てるよ～`,
+                ephemeral: true
+            });
+
+            await interaction.editReply("ゲームの検索終了！");
 
         }
         catch (error) {

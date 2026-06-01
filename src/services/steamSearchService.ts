@@ -1,6 +1,5 @@
 import { SteamStoreApp } from "./steamTypeManager.js";
 import { normalizeSearchText } from "../formatter/textFormatter.js";
-import { logger } from "../util/logger.js";
 
 export function searchSteamApps(apps: SteamStoreApp[], keyword: string, limit: number = 10): SteamStoreApp[] {
     const normalizedKeyword = normalizeSearchText(keyword);
@@ -18,7 +17,6 @@ export function searchSteamApps(apps: SteamStoreApp[], keyword: string, limit: n
 
     if (filteredApps.length > safeLimit && safeLimit > 0) {
         // limitが指定されている場合に、limit数以上の結果は切り捨てて返却する
-        logger.info(`検索結果が ${filteredApps.length} 件のため、一部の検索結果を切り捨てます`);
         return filteredApps.slice(0, safeLimit);
     }
 
