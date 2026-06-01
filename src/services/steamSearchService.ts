@@ -6,7 +6,7 @@ export function searchSteamApps(apps: SteamStoreApp[], keyword: string, limit: n
     const normalizedKeyword = normalizeSearchText(keyword);
     const safeLimit = Math.max(0, limit);
 
-    if (!normalizedKeyword || safeLimit === 0) {
+    if (!normalizedKeyword) {
         return [];
     }
 
@@ -16,9 +16,11 @@ export function searchSteamApps(apps: SteamStoreApp[], keyword: string, limit: n
         return normalizedName.includes(normalizedKeyword);
     });
 
-    if (filteredApps.length > safeLimit) {
+    if (filteredApps.length > safeLimit && safeLimit > 0) {
+        // limitが指定されている場合に、limit数以上の結果は切り捨てて返却する
         logger.info(`検索結果が ${filteredApps.length} 件のため、一部の検索結果を切り捨てます`);
+        return filteredApps.slice(0, safeLimit);
     }
 
-    return filteredApps.slice(0, safeLimit);
+    return filteredApps;
 }
