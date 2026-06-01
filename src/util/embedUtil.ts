@@ -41,7 +41,7 @@ export async function createEmbed(data: ExtendedSteamGameDetail) {
 }
 
 export function createButton(data: ExtendedSteamGameDetail) {
-    const appid = data.mostplayed.appid;
+    const appid = data.steamDetail.steam_appid;
 
     const buttons = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(new ButtonBuilder().setLabel("Steamを見る").setStyle(ButtonStyle.Link).setURL(`https://store.steampowered.com/app/${appid}`));

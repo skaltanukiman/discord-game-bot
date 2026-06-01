@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import { logger } from "../util/logger.js";
-import { getAllSteamGames } from "../services/steamService.js";
+import { fetchCurrentPlayerCounts, getAllSteamGames, getDetailGameDatas } from "../services/steamService.js";
 import { searchSteamApps } from "../services/steamSearchService.js";
 
 const GAME_SEARCH_COMMAND_NAME = {
@@ -50,6 +50,13 @@ export const gameSearchCommand = {
                 content: `検索結果が ${searchResults.length} 件あるから ${slicedResults.length} 件まで検索結果を切り捨てるよ～`,
                 ephemeral: true
             });
+
+            const appids: number[] = slicedResults.map(x => x.appid);
+
+            const [detailData, currentPlayer] = await Promise.all([
+                getDetailGameDatas(appids),
+                fetchCurrentPlayerCounts(appids)
+            ]);
 
             await interaction.editReply("ゲームの検索終了！");
 

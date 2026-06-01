@@ -73,7 +73,7 @@ export async function getMostPlayedGameDetails(): Promise<Map<number, ExtendedSt
  * @param appids 取得対象の Steam appid 配列
  * @returns appid をキーとした同時接続数データ
  */
-async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayersData> {
+export async function fetchCurrentPlayerCounts(appids: number[]): Promise<CurrentPlayersData> {
     const result: CurrentPlayersData = {};
 
     const needFetch: number[] = [];
