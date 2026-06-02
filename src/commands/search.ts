@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import { logger } from "../util/logger.js";
-import { buildGameDetailsWithCurrentPlayerCounts, fetchCurrentPlayerCounts, getAllSteamGames, getDetailGameDatas, mergeSteamDetailsWithCurrentPlayers } from "../services/steamService.js";
+import { buildGameDetailsWithCurrentPlayerCounts, getAllSteamGames } from "../services/steamService.js";
 import { searchSteamApps } from "../services/steamSearchService.js";
 import { getTextChannel } from "../clients/channel.js";
 import { sendGameDetailsToChannel } from "../services/embedService.js";
