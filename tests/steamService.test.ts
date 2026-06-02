@@ -4,6 +4,8 @@ import axios from "axios";
 import { fetchAllSteamGames } from "../src/services/steamApiService";
 import { setTimeout as wait } from "timers/promises";
 import { logger } from "../src/util/logger";
+import { CurrentPlayersData, SteamAppDetailsResponse } from "../src/services/steamTypeManager";
+import { mergeSteamDetailsWithCurrentPlayers } from "../src/services/steamService";
 
 vi.mock("axios");
 
@@ -248,5 +250,144 @@ describe("fetchAllSteamGames", () => {
             "Steamストア情報一覧取得APIエラー",
             error
         );
+    });
+});
+
+/**
+ * mergeSteamDetailsWithCurrentPlayers のテスト
+ *
+ * Steamゲーム詳細データと現在プレイヤー数データを結合する処理について、
+ * 空データ・取得成功データのみの抽出・プレイヤー数の有無・0人の場合の挙動を確認する。
+ */
+describe("mergeSteamDetailsWithCurrentPlayers", () => {
+    it("Steamゲーム詳細データが空の場合、空配列を返す", () => {
+        const steamDetails: SteamAppDetailsResponse = {};
+        const currentPlayersData: CurrentPlayersData = {};
+
+        const result = mergeSteamDetailsWithCurrentPlayers(
+            steamDetails,
+            currentPlayersData
+        );
+
+        expect(result).toEqual([]);
+    });
+
+    it("取得に成功したSteamゲーム詳細データのみを結合して返す", () => {
+        const steamDetails: SteamAppDetailsResponse = {
+            "100": {
+                success: true,
+                data: {
+                    type: "game",
+                    steam_appid: 100,
+                    name: "Test Game 1",
+                    is_free: false
+                }
+            },
+            "200": {
+                success: false,
+                data: {
+                    type: "game",
+                    steam_appid: 200,
+                    name: "Test Game 2",
+                    is_free: false
+                }
+            }
+        } as SteamAppDetailsResponse;
+
+        const currentPlayersData: CurrentPlayersData = {
+            "100": {
+                data: {
+                    player_count: 12345
+                }
+            }
+        } as CurrentPlayersData;
+
+        const result = mergeSteamDetailsWithCurrentPlayers(steamDetails, currentPlayersData);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toEqual({
+            steamDetail: {
+                type: "game",
+                steam_appid: 100,
+                name: "Test Game 1",
+                is_free: false
+            },
+            currentPlayers: {
+                player_count: 12345
+            }
+        });
+    });
+
+    it("現在プレイヤー数データが存在しない場合、currentPlayers を設定しない", () => {
+        const steamDetails: SteamAppDetailsResponse = {
+            "100": {
+                success: true,
+                data: {
+                    type: "game",
+                    steam_appid: 100,
+                    name: "Test Game 1",
+                    is_free: false
+                }
+            }
+        } as SteamAppDetailsResponse;
+
+        const currentPlayersData: CurrentPlayersData = {};
+
+        const result = mergeSteamDetailsWithCurrentPlayers(
+            steamDetails,
+            currentPlayersData
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toEqual({
+           steamDetail: {
+                type: "game",
+                steam_appid: 100,
+                name: "Test Game 1",
+                is_free: false
+            }
+        });
+
+        expect(result[0]).not.toHaveProperty("currentPlayers");
+    });
+
+    it("現在プレイヤー数が 0 の場合も currentPlayers を設定する", () => {
+        const steamDetails: SteamAppDetailsResponse = {
+            "100": {
+                success: true,
+                data: {
+                    type: "game",
+                    steam_appid: 100,
+                    name: "Test Game 1",
+                    is_free: false
+                }
+            }
+        };
+
+        const currentPlayersData: CurrentPlayersData = {
+            "100": {
+                data: {
+                    player_count: 0
+                }
+            }
+        };
+
+        const result = mergeSteamDetailsWithCurrentPlayers(
+            steamDetails,
+            currentPlayersData
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toEqual({
+            steamDetail: {
+                type: "game",
+                steam_appid: 100,
+                name: "Test Game 1",
+                is_free: false
+            },
+            currentPlayers: {
+                player_count: 0
+            }
+        });
     });
 });
