@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import { logger } from "../util/logger.js";
-import { fetchCurrentPlayerCounts, getAllSteamGames, getDetailGameDatas, mergeSteamDetailsWithCurrentPlayers } from "../services/steamService.js";
+import { buildGameDetailsWithCurrentPlayerCounts, fetchCurrentPlayerCounts, getAllSteamGames, getDetailGameDatas, mergeSteamDetailsWithCurrentPlayers } from "../services/steamService.js";
 import { searchSteamApps } from "../services/steamSearchService.js";
 import { getTextChannel } from "../clients/channel.js";
 import { sendGameDetailsToChannel } from "../services/embedService.js";
@@ -42,6 +42,17 @@ export const gameSearchCommand = {
 
             const keyword = interaction.options.getString(GAME_SEARCH_COMMAND_NAME.KEYWORD, true);
 
+            const channel = await getTextChannel();
+
+            if (!channel) {
+                logger.warn("チャンネルが取得出来なかったため処理を中断します");
+
+                await interaction.editReply({
+                    content: "チャンネルが取得出来なかったため処理を中断します"
+                });
+                return;
+            }
+
             const apps = await getAllSteamGames();
 
             const searchResults = searchSteamApps(apps, keyword, 0);
@@ -64,25 +75,7 @@ export const gameSearchCommand = {
 
             const appids: number[] = slicedResults.map(x => x.appid);
 
-            // ここより下の部分をラップできるのであればラップする
-
-            const [detailData, currentPlayer] = await Promise.all([
-                getDetailGameDatas(appids),
-                fetchCurrentPlayerCounts(appids)
-            ]);
-
-            const gameDetails = mergeSteamDetailsWithCurrentPlayers(detailData, currentPlayer);
-
-            const channel = await getTextChannel();
-
-            if (!channel) {
-                logger.warn("チャンネルが取得出来なかったため処理を中断します");
-
-                await interaction.editReply({
-                    content: "チャンネルが取得出来なかったため処理を中断します"
-                });
-                return;
-            }
+            const gameDetails = await buildGameDetailsWithCurrentPlayerCounts(appids);
 
             requestContext.run(
                 {

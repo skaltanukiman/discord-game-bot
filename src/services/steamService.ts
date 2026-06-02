@@ -546,3 +546,22 @@ export function mergeSteamDetailsWithCurrentPlayers(steamDetails: SteamAppDetail
                                             };
                                        });
 }
+
+/**
+ * 指定された appid のゲーム詳細情報と現在のプレイヤー数を取得し、
+ * それらを結合したゲーム詳細データを返す。
+ *
+ * Steam のゲーム詳細情報取得処理と現在プレイヤー数取得処理は
+ * 互いに依存しないため、Promise.all により並列で実行する。
+ *
+ * @param appids 取得対象の Steam アプリID配列
+ * @returns ゲーム詳細情報に現在のプレイヤー数を付加したデータ配列
+ */
+export async function buildGameDetailsWithCurrentPlayerCounts(appids: number[]): Promise<ExtendedSteamGameDetail[]> {
+    const [detailData, currentPlayer] = await Promise.all([
+        getDetailGameDatas(appids),
+        fetchCurrentPlayerCounts(appids)
+    ]);
+
+    return mergeSteamDetailsWithCurrentPlayers(detailData, currentPlayer);
+}
