@@ -1,6 +1,6 @@
 import { describe, it, expect} from "vitest";
 import { formatGenres, formatCategories } from "../src/formatter/steamDataFormatter.js";
-import { removeHtmlTag } from "../src/formatter/textFormatter.js";
+import { removeHtmlTag, normalizeSearchText } from "../src/formatter/textFormatter.js";
 
 /**
  * formatGenres のテスト
@@ -109,6 +109,75 @@ describe("removeHtmlTag", () => {
 
     it("空文字の場合は空文字を返す", () => {
         const result = removeHtmlTag("");
+
+        expect(result).toBe("");
+    });
+});
+
+/**
+ * normalizeSearchText のテスト
+ *
+ * 検索用文字列の正規化処理について、
+ * 大文字小文字の統一、空白除去、記号除去、
+ * 日本語・数字を含む文字列の扱いを確認する。
+ */
+describe("normalizeSearchText", () => {
+    it("英字の大文字を小文字に変換する", () => {
+        const result = normalizeSearchText("MonsterHunter");
+
+        expect(result).toBe("monsterhunter");
+    });
+
+    it("空白を除去する", () => {
+        const result = normalizeSearchText("Monster Hunter Wilds");
+
+        expect(result).toBe("monsterhunterwilds");
+    });
+
+    it("タブや改行などの空白文字を除去する", () => {
+        const result = normalizeSearchText("Monster\tHunter\nWilds");
+
+        expect(result).toBe("monsterhunterwilds");
+    });
+
+    it("記号を除去する", () => {
+        const result = normalizeSearchText("Monster-Hunter: Wilds!");
+
+        expect(result).toBe("monsterhunterwilds");
+    });
+
+    it("括弧やスラッシュなどの記号を除去する", () => {
+        const result = normalizeSearchText("Monster Hunter (Wilds) / Deluxe Edition");
+
+        expect(result).toBe("monsterhunterwildsdeluxeedition");
+    });
+
+    it("空白と記号が混在していても除去する", () => {
+        const result = normalizeSearchText("  Monster - Hunter : Wilds !!  ");
+
+        expect(result).toBe("monsterhunterwilds");
+    });
+
+    it("日本語の文字列はそのまま保持する", () => {
+        const result = normalizeSearchText("モンスターハンター");
+
+        expect(result).toBe("モンスターハンター");
+    });
+
+    it("日本語の空白や記号を除去する", () => {
+        const result = normalizeSearchText("モンスター・ハンター：ワイルズ");
+
+        expect(result).toBe("モンスターハンターワイルズ");
+    });
+
+    it("数字はそのまま保持する", () => {
+        const result = normalizeSearchText("Game 2025 Edition!");
+
+        expect(result).toBe("game2025edition");
+    });
+
+    it("空文字の場合、空文字を返す", () => {
+        const result = normalizeSearchText("");
 
         expect(result).toBe("");
     });
