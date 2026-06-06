@@ -6,10 +6,15 @@ import { getTextChannel } from "../clients/channel.js";
 import { sendGameDetailsToChannel } from "../services/embedService.js";
 import { GENERATION_LIMIT } from "../services/openaiService.js";
 import { requestContext } from "../context/requestContext.js";
+import { categoryGroups } from "../structure/categorise.js";
+import { GameFiltering } from "./commandCommonVal.js";
+import { ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
+import { filterMultiplayerGamesArray, filterSingleplayerGamesArray } from "../util/filtering.js";
 
 const GAME_SEARCH_COMMAND_NAME = {
     KEYWORD: "keyword",
-    USEOPENAI: "use_openai"
+    USEOPENAI: "use_openai",
+    PLAYTYPE: "play_type"
 } as const;
 
 export const gameSearchCommand = {
@@ -29,6 +34,16 @@ export const gameSearchCommand = {
             option.setName(GAME_SEARCH_COMMAND_NAME.USEOPENAI)
                   .setDescription(`OpenAIで説明文を生成する（一回のリクエストにつき最大連続${GENERATION_LIMIT}件まで）`)
                   .setRequired(false)
+        )
+
+        .addIntegerOption(option =>
+            option.setName(GAME_SEARCH_COMMAND_NAME.PLAYTYPE)
+                  .setDescription("シングルプレイ/マルチプレイでフィルター（選択無しの場合、フィルタリングなし）")
+                  .setRequired(false)
+                  .addChoices(
+                    { name: "シングルプレイ", value: GameFiltering.SinglePlay },
+                    { name: "マルチプレイ", value: GameFiltering.MultiPlay }
+                  )
         ),
 
     execute: async (interaction: ChatInputCommandInteraction) => {
@@ -41,6 +56,7 @@ export const gameSearchCommand = {
             await interaction.editReply("検索中～～～");
 
             const keyword = interaction.options.getString(GAME_SEARCH_COMMAND_NAME.KEYWORD, true);
+            const playType = interaction.options.getInteger(GAME_SEARCH_COMMAND_NAME.PLAYTYPE) ?? GameFiltering.All;
 
             const channel = await getTextChannel();
 
@@ -77,13 +93,15 @@ export const gameSearchCommand = {
 
             const gameDetails = await buildGameDetailsWithCurrentPlayerCounts(appids);
 
+            const sendDetails = filterDetails(gameDetails, playType);
+
             requestContext.run(
                 {
                     useOpenAI: interaction.options.getBoolean(GAME_SEARCH_COMMAND_NAME.USEOPENAI) ?? false,
                     generateCount: 0
                 },
                 async () => {
-                    await sendGameDetailsToChannel(gameDetails, channel);
+                    await sendGameDetailsToChannel(sendDetails, channel);
                 }
             );
             
@@ -98,5 +116,35 @@ export const gameSearchCommand = {
             }
         }
         
+    }
+}
+
+/**
+ * プレイ種別に応じてSteamゲーム詳細データを絞り込む。
+ *
+ * すべて、シングルプレイ対応、マルチプレイ対応のいずれかで
+ * ゲーム詳細データを絞り込んで返却する。
+ *
+ * @param gameDetails 絞り込み対象のSteamゲーム詳細データ配列
+ * @param playType 絞り込みに使用するプレイ種別
+ * @returns 絞り込み後のSteamゲーム詳細データ配列
+ * @throws playType が不正値の場合
+ */
+function filterDetails(gameDetails: ExtendedSteamGameDetail[], playType: number): ExtendedSteamGameDetail[] {
+    switch (playType) {
+        case GameFiltering.All:
+            console.log("全てを返却します。");
+            return gameDetails;
+
+        case GameFiltering.SinglePlay:
+            console.log("シングルプレイカテゴリを含むものを返却します。");
+            return filterSingleplayerGamesArray(gameDetails);
+
+        case GameFiltering.MultiPlay:
+            console.log("マルチプレイカテゴリを含むものを返却します。");
+            return filterMultiplayerGamesArray(gameDetails);
+
+        default:
+            throw new Error("filterDetailsに渡されたplayTypeが不正値です");
     }
 }
