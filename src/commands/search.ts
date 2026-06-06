@@ -95,13 +95,22 @@ export const gameSearchCommand = {
 
             const sendDetails = filterDetails(gameDetails, playType);
 
+            await notifyGameFilterResult(gameDetails, sendDetails, interaction);
+
             requestContext.run(
                 {
                     useOpenAI: interaction.options.getBoolean(GAME_SEARCH_COMMAND_NAME.USEOPENAI) ?? false,
                     generateCount: 0
                 },
                 async () => {
-                    await sendGameDetailsToChannel(sendDetails, channel);
+                    const resultCount = await sendGameDetailsToChannel(sendDetails, channel);
+
+                    if (resultCount === 0) {
+                        await interaction.followUp({
+                            content: "ゲーム情報が存在しないため、ゲーム情報送信処理を終了します。",
+                            ephemeral: true
+                        });
+                    }
                 }
             );
             
@@ -117,6 +126,30 @@ export const gameSearchCommand = {
         }
         
     }
+}
+
+/**
+ * ゲーム情報のフィルター結果を通知する。
+ *
+ * フィルター前後の件数を比較し、除外されたゲームがある場合のみ、
+ * 除外件数と件数の変化を Discord に通知する。
+ *
+ * @param gameDetails フィルター前のゲーム詳細情報一覧
+ * @param sendDetails フィルター後に送信対象となったゲーム詳細情報一覧
+ * @param interaction Discord のコマンド実行時インタラクション
+ */
+async function notifyGameFilterResult(gameDetails:ExtendedSteamGameDetail[], sendDetails:ExtendedSteamGameDetail[], interaction: ChatInputCommandInteraction) {
+    const gameLen = gameDetails.length;
+    const sendLen = sendDetails.length;
+
+    const diffLen = gameLen - sendLen;
+
+    if (diffLen === 0) return;
+
+    await interaction.followUp({
+        content: `抽出条件でゲーム情報を抽出した結果 ${diffLen}件 の情報を切り捨てます [ ${gameLen} → ${sendLen} ]`,
+        ephemeral: true
+    });
 }
 
 /**
