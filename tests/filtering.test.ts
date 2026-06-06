@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { filterMultiplayerGames, pickRandomvaluesFromMap  } from "../src/util/filtering";
+import { filterMultiplayerGames, pickRandomvaluesFromMap, filterMultiplayerGamesArray, filterSingleplayerGamesArray, filterSingleplayerOnlyGamesArray } from "../src/util/filtering";
 import type { ExtendedSteamGameDetail } from "../src/services/steamTypeManager";
 
 /**
@@ -232,3 +232,141 @@ describe("pickRandomvaluesFromMap", () => {
         expect(result.every(x => Array.from(map.values()).includes(x))).toBe(true);
     });
 });
+
+/**
+ * Steamゲーム詳細データのプレイ種別フィルタリング処理のテスト
+ *
+ * SteamカテゴリIDをもとに、
+ * シングルプレイ対応、マルチプレイ対応、シングルプレイ専用の
+ * ゲームを正しく抽出できるかを確認する。
+ */
+describe("Steamゲーム詳細データのプレイ種別フィルタリング", () => {
+    const singleplayerGame = createGameDetail(100, "Single Game", [{ id: 2, description: "Single-player" }]);
+    const multiplayerGame = createGameDetail(200, "Multi Game", [{ id: 1, description: "Multi-player" }]);
+    const singleAndMultiGame = createGameDetail(300, "Single And Multi Game", [
+        { id: 2, description: "Single-player" },
+        { id: 1, description: "Multi-player" }
+    ]);
+
+    const noCategoriesGame = createGameDetail(400, "No Categories Game");
+
+    const gameDetails: ExtendedSteamGameDetail[] = [
+        singleplayerGame,
+        multiplayerGame,
+        singleAndMultiGame,
+        noCategoriesGame
+    ];
+
+    describe("filterMultiplayerGamesArray", () => {
+        it("マルチプレイ系カテゴリIDを持つゲームのみを抽出する", () => {
+            const result = filterMultiplayerGamesArray(gameDetails);
+
+            expect(result).toEqual([
+                multiplayerGame,
+                singleAndMultiGame
+            ]);
+        });
+
+        it("categories が存在しないゲームは抽出対象外とする", () => {
+            const result = filterMultiplayerGamesArray([
+                noCategoriesGame
+            ]);
+
+            expect(result).toEqual([]);
+        });
+
+        it("抽出対象データが空配列の場合、空配列を返す", () => {
+            const result = filterMultiplayerGamesArray([]);
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe("filterSingleplayerGamesArray", () => {
+        it("シングルプレイ系カテゴリIDを持つゲームを抽出する", () => {
+            const result = filterSingleplayerGamesArray(gameDetails);
+
+            expect(result).toEqual([
+                singleplayerGame,
+                singleAndMultiGame
+            ]);
+        });
+
+        it("シングルプレイとマルチプレイの両方に対応しているゲームも抽出対象に含める", () => {
+            const result = filterSingleplayerGamesArray([
+                singleAndMultiGame
+            ]);
+
+            expect(result).toEqual([
+                singleAndMultiGame
+            ]);
+        });
+
+        it("categories が存在しないゲームは抽出対象外とする", () => {
+            const result = filterSingleplayerGamesArray([
+                noCategoriesGame
+            ]);
+
+            expect(result).toEqual([]);
+        });
+
+        it("抽出対象データが空配列の場合、空配列を返す", () => {
+            const result = filterSingleplayerGamesArray([]);
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe("filterSingleplayerOnlyGamesArray", () => {
+        it("シングルプレイ系カテゴリIDを持ち、マルチプレイ系カテゴリIDを持たないゲームのみを抽出する", () => {
+            const result = filterSingleplayerOnlyGamesArray(gameDetails);
+
+            expect(result).toEqual([
+                singleplayerGame
+            ]);
+        });
+
+        it("シングルプレイとマルチプレイの両方に対応しているゲームは抽出対象外とする", () => {
+            const result = filterSingleplayerOnlyGamesArray([
+                singleAndMultiGame
+            ]);
+
+            expect(result).toEqual([]);
+        });
+
+        it("マルチプレイ系カテゴリIDのみを持つゲームは抽出対象外とする", () => {
+            const result = filterSingleplayerOnlyGamesArray([
+                multiplayerGame
+            ]);
+
+            expect(result).toEqual([]);
+        });
+
+        it("categories が存在しないゲームは抽出対象外とする", () => {
+            const result = filterSingleplayerOnlyGamesArray([
+                noCategoriesGame
+            ]);
+
+            expect(result).toEqual([]);
+        });
+
+        it("抽出対象データが空配列の場合、空配列を返す", () => {
+            const result = filterSingleplayerOnlyGamesArray([]);
+
+            expect(result).toEqual([]);
+        });
+    });
+
+});
+
+function createGameDetail(appid: number, name: string, categories?: { id: number; description: string}[]): ExtendedSteamGameDetail {
+    return {
+        steamDetail: {
+            type: "game",
+            name,
+            steam_appid: appid,
+            is_free: false,
+            categories
+        }
+    };
+}
