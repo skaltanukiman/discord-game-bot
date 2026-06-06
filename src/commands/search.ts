@@ -6,7 +6,6 @@ import { getTextChannel } from "../clients/channel.js";
 import { sendGameDetailsToChannel } from "../services/embedService.js";
 import { GENERATION_LIMIT } from "../services/openaiService.js";
 import { requestContext } from "../context/requestContext.js";
-import { categoryGroups } from "../structure/categorise.js";
 import { GameFiltering } from "./commandCommonVal.js";
 import { ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
 import { filterMultiplayerGamesArray, filterSingleplayerGamesArray, filterSingleplayerOnlyGamesArray } from "../util/filtering.js";
@@ -134,19 +133,15 @@ export const gameSearchCommand = {
 function filterDetails(gameDetails: ExtendedSteamGameDetail[], playType: number): ExtendedSteamGameDetail[] {
     switch (playType) {
         case GameFiltering.All:
-            console.log("全てを返却します。");
             return gameDetails;
 
         case GameFiltering.SinglePlay:
-            console.log("シングルプレイカテゴリを含むものを返却します。");
             return filterSingleplayerGamesArray(gameDetails);
 
         case GameFiltering.MultiPlay:
-            console.log("マルチプレイカテゴリを含むものを返却します。");
             return filterMultiplayerGamesArray(gameDetails);
 
         case GameFiltering.SingleOnly:
-            console.log("シングルプレイを含みマルチプレイカテゴリを含めないものを返却します。");
             return filterSingleplayerOnlyGamesArray(gameDetails);
 
         default:
