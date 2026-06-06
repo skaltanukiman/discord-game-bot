@@ -9,7 +9,7 @@ import { requestContext } from "../context/requestContext.js";
 import { categoryGroups } from "../structure/categorise.js";
 import { GameFiltering } from "./commandCommonVal.js";
 import { ExtendedSteamGameDetail } from "../services/steamTypeManager.js";
-import { filterMultiplayerGamesArray, filterSingleplayerGamesArray } from "../util/filtering.js";
+import { filterMultiplayerGamesArray, filterSingleplayerGamesArray, filterSingleplayerOnlyGamesArray } from "../util/filtering.js";
 
 const GAME_SEARCH_COMMAND_NAME = {
     KEYWORD: "keyword",
@@ -42,7 +42,8 @@ export const gameSearchCommand = {
                   .setRequired(false)
                   .addChoices(
                     { name: "シングルプレイ", value: GameFiltering.SinglePlay },
-                    { name: "マルチプレイ", value: GameFiltering.MultiPlay }
+                    { name: "マルチプレイ", value: GameFiltering.MultiPlay },
+                    { name: "シングルプレイ専用", value: GameFiltering.SingleOnly }
                   )
         ),
 
@@ -143,6 +144,10 @@ function filterDetails(gameDetails: ExtendedSteamGameDetail[], playType: number)
         case GameFiltering.MultiPlay:
             console.log("マルチプレイカテゴリを含むものを返却します。");
             return filterMultiplayerGamesArray(gameDetails);
+
+        case GameFiltering.SingleOnly:
+            console.log("シングルプレイを含みマルチプレイカテゴリを含めないものを返却します。");
+            return filterSingleplayerOnlyGamesArray(gameDetails);
 
         default:
             throw new Error("filterDetailsに渡されたplayTypeが不正値です");

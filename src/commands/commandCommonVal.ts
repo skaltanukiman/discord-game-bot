@@ -6,5 +6,6 @@ export enum RecommendMode {
 export enum GameFiltering {
     All = 0,
     SinglePlay = 1,
-    MultiPlay = 2
+    MultiPlay = 2,
+    SingleOnly = 3
 }
